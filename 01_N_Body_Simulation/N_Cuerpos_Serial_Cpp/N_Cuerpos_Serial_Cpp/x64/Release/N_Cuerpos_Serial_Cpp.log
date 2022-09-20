@@ -1,0 +1,9 @@
+﻿  main.cpp
+C:\Users\geraw\OneDrive\Documentos\Servicio Social\N_Cuerpos_Serial_Cpp\N_Cuerpos_Serial_Cpp\main.cpp(48,43): warning C4244: 'initializing': conversion from 'const int' to 'float', possible loss of data
+C:\Users\geraw\OneDrive\Documentos\Servicio Social\N_Cuerpos_Serial_Cpp\N_Cuerpos_Serial_Cpp\main.cpp(48,31): warning C4244: 'initializing': conversion from 'const int' to 'const float', possible loss of data
+  Generating code
+  0 of 103 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  N_Cuerpos_Serial_Cpp.vcxproj -> C:\Users\geraw\OneDrive\Documentos\Servicio Social\N_Cuerpos_Serial_Cpp\x64\Release\N_Cuerpos_Serial_Cpp.exe
