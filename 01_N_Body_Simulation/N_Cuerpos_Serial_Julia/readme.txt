@@ -1,0 +1,1 @@
+nvcc -I../../dependencies n_cuerpos.cu -o n_cuerpos
