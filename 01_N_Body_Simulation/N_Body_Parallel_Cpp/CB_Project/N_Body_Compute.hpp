@@ -5,9 +5,13 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <functional>
 
-#include <Particle_Set.hpp>
-#include <Computation_Info.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/norm.hpp>
+
+#include "Particle_Set.hpp"
+#include "Computation_Info.hpp"
 
 std::mutex m;
 std::condition_variable cv;
@@ -28,7 +32,7 @@ auto n_body_velocity_calc(unsigned index, Particle_Set &particles, const float d
 
     glm::vec3 force(0.0f, 0.0f, 0.0f);
 
-    /// Loop to calculate a particle's force due to all the other particles
+    /// Loop to calculate a particle force due to all the other particles
     for (unsigned j = 0; j < numParticles; ++j)
     {
         /// If indexes i & j refer to the same body, do nothing
@@ -41,10 +45,10 @@ auto n_body_velocity_calc(unsigned index, Particle_Set &particles, const float d
         force += G * mass * mass * direction / distance2;
     }
 
-    // f=ma => a=f/m
+    /// f=ma => a=f/m
     glm::vec3 acceleration = force / mass;
 
-    // v=v0+a*dt
+    /// v=v0+a*dt
     velocities[i] += acceleration * deltaTime;
 
 
@@ -74,19 +78,21 @@ auto n_body_thread(unsigned begin, unsigned end, Particle_Set &particles, const 
         }
 
         /// Sync threads for memory coherence
+        std::unique_lock<std::mutex> lk(m);
+        ++threads_done;
+
+        if (threads_done == info.numThreads)
         {
-            std::lock_guard<std::mutex> lk(m);
-            ++threads_done;
+            lk.unlock();
             cv.notify_all();
+            lk.lock();
         }
+        else
+            cv.wait(lk, [&info]{ return threads_done == info.numThreads;});
 
-        std::unique_lock ulk(m);
-        cv.wait(ulk, []{ return threads_done == info.numThreads});
+        --threads_done;
+        lk.unlock();
 
-        {
-            std::lock_guard<std::mutex> lk(m);
-            --threads_done;
-        }
 
         /// Dispatch the position calculation
         for (int j = begin; j < end; ++j)
@@ -95,9 +101,25 @@ auto n_body_thread(unsigned begin, unsigned end, Particle_Set &particles, const 
         }
 
         /// Sync again
+        lk.lock();
+        ++threads_done;
 
+        if (threads_done == info.numThreads)
+        {
+            std::cout << particles.positions[0].x << ' ' << particles.positions[0].y << ' ' << particles.positions[0].z << '\n';
+            lk.unlock();
+            cv.notify_all();
+            lk.lock();
+        }
+        else
+            cv.wait(lk, [&info]{ return threads_done == info.numThreads;});
+
+        --threads_done;
+        lk.unlock();
 
     }
+
+    return;
 
 }
 
@@ -110,12 +132,10 @@ auto n_body_computation_dispatcher(Particle_Set &particles, const Computation_In
 
 	while (curr_index < particles.numParticles - step_index)
 	{
-		n_body_velocity_calc(curr_index, curr_index + step_index, particles, info.timeStep);
+		std::jthread thr{n_body_thread, curr_index, curr_index + step_index, std::ref(particles), std::cref(info)};
 		curr_index += step_index;
 	}
-	n_body_velocity_calc(curr_index, particles.numParticles, particles, info.timeStep);
-
-    funcion
+	std::jthread thr{n_body_thread, curr_index, particles.numParticles, std::ref(particles), std::cref(info)};
 
     //std::cout << positions[0].x << ' ' << positions[0].y << ' ' << positions[0].z << '\n';
 

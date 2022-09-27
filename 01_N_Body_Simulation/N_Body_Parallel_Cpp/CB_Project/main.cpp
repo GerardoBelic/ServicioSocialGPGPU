@@ -8,7 +8,7 @@
 
 #include "Particle_Set.hpp"
 #include "Computation_Info.hpp"
-
+#include "N_Body_Compute.hpp"
 
 
 auto get_computation_info(int argc, char **argv) -> std::tuple<Particle_Set, Computation_Info>
@@ -28,7 +28,8 @@ auto get_computation_info(int argc, char **argv) -> std::tuple<Particle_Set, Com
 	app.add_option("--iterations", iterations, "Number of iterations of the simulation") -> required();
 	app.add_option("--threads", threads, "Number of simultaneous threads (def=max_pc_threads)");
 
-    CLI11_PARSE(app, argc, argv);
+    //CLI11_PARSE(app, argc, argv);
+    app.parse(argc, argv);
 
     std::cout << "Particle count: " << numParticles << " particles" << "\n";
 	std::cout << "Particle mass: " << mass << " [kg]" << "\n";
@@ -50,6 +51,6 @@ int main(int argc, char **argv)
 
 	auto [particle_set, computation_info] = get_computation_info(argc, argv);
 
-    n_body_computation(particle_set, computation_info);
+    n_body_computation_dispatcher(particle_set, computation_info);
 
 }

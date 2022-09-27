@@ -4,7 +4,7 @@
 #include <vector>
 #include <random>
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 
 struct Particle_Set
 {
