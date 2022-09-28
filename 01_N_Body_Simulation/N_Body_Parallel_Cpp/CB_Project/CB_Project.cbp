@@ -11,7 +11,9 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="--particles=1024 --mass=1.0e9 --dt=1.0 --iterations=20" />
 				<Compiler>
+					<Add option="-Wall" />
 					<Add option="-g" />
 					<Add option="-std=c++20" />
 					<Add directory="../../../dependencies" />
@@ -22,8 +24,11 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="--particles=1024 --mass=1.0e9 --dt=1.0 --iterations=20" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add option="-std=c++20" />
+					<Add directory="../../../dependencies" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />

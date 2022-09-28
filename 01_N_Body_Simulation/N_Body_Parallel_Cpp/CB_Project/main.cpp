@@ -49,8 +49,8 @@ auto get_computation_info(int argc, char **argv) -> std::tuple<Particle_Set, Com
 int main(int argc, char **argv)
 {
 
-	auto [particle_set, computation_info] = get_computation_info(argc, argv);
+	auto [particle_set, computation_info] = get_computation_info(argc, argv);//std::cout << particle_set.positions[0].x << ' ' << particle_set.positions[0].y << ' ' << particle_set.positions[0].z << '\n';
 
-    n_body_computation_dispatcher(particle_set, computation_info);
+    n_body_computation_dispatcher(particle_set, computation_info);//std::cout << particle_set.positions[0].x << ' ' << particle_set.positions[0].y << ' ' << particle_set.positions[0].z << '\n';
 
 }

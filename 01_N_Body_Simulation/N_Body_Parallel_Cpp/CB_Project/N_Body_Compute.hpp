@@ -1,21 +1,14 @@
 #ifndef N_BODY_COMPUTE
 #define N_BODY_COMPUTE
 
-#include <atomic>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <functional>
-
+#include <barrier>
+//#include <boost/thread/barrier>
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
 
 #include "Particle_Set.hpp"
 #include "Computation_Info.hpp"
-
-std::mutex m;
-std::condition_variable cv;
-unsigned threads_done = 0;
 
 auto n_body_velocity_calc(unsigned index, Particle_Set &particles, const float deltaTime) -> void
 {
@@ -56,7 +49,7 @@ auto n_body_velocity_calc(unsigned index, Particle_Set &particles, const float d
 
 auto n_body_position_calc(unsigned index, Particle_Set &particles, const float deltaTime) -> void
 {
-	// Aliases for our variables
+	/// Aliases for our variables
 	std::vector<glm::vec3> &positions = particles.positions;
     std::vector<glm::vec3> &velocities = particles.velocities;
 
@@ -66,56 +59,30 @@ auto n_body_position_calc(unsigned index, Particle_Set &particles, const float d
 
 }
 
-auto n_body_thread(unsigned begin, unsigned end, Particle_Set &particles, const Computation_Info &info) -> void
+auto n_body_thread(unsigned begin, unsigned end, Particle_Set &particles, const Computation_Info &info, decltype(std::barrier{0}) &sync_point) -> void
+//auto n_body_thread(unsigned begin, unsigned end, Particle_Set &particles, const Computation_Info &info, boost::barrier &sync_point) -> void
 {
 
-    for (int i = 0; i < info.numIterations; ++i)
+    for (unsigned i = 0; i < info.numIterations; ++i)
     {
         /// Dispatch the velocity calculation
-        for (int j = begin; j < end; ++j)
+        for (unsigned j = begin; j < end; ++j)
         {
             n_body_velocity_calc(j, particles, info.timeStep);
-        }
+        }//std::cout << "*";
 
         /// Sync threads for memory coherence
-        std::unique_lock<std::mutex> lk(m);
-        ++threads_done;
-
-        if (threads_done == info.numThreads)
-        {
-            lk.unlock();
-            cv.notify_all();
-            lk.lock();
-        }
-        else
-            cv.wait(lk, [&info]{ return threads_done == info.numThreads;});
-
-        --threads_done;
-        lk.unlock();
+        sync_point.arrive_and_wait();
 
 
         /// Dispatch the position calculation
-        for (int j = begin; j < end; ++j)
+        for (unsigned j = begin; j < end; ++j)
         {
             n_body_position_calc(j, particles, info.timeStep);
-        }
+        }//std::cout << "-";
 
         /// Sync again
-        lk.lock();
-        ++threads_done;
-
-        if (threads_done == info.numThreads)
-        {
-            std::cout << particles.positions[0].x << ' ' << particles.positions[0].y << ' ' << particles.positions[0].z << '\n';
-            lk.unlock();
-            cv.notify_all();
-            lk.lock();
-        }
-        else
-            cv.wait(lk, [&info]{ return threads_done == info.numThreads;});
-
-        --threads_done;
-        lk.unlock();
+        sync_point.arrive_and_wait();
 
     }
 
@@ -130,22 +97,21 @@ auto n_body_computation_dispatcher(Particle_Set &particles, const Computation_In
 	unsigned curr_index = 0;
 	unsigned step_index = particles.numParticles / info.numThreads;
 
-	while (curr_index < particles.numParticles - step_index)
-	{
-		std::jthread thr{n_body_thread, curr_index, curr_index + step_index, std::ref(particles), std::cref(info)};
-		curr_index += step_index;
-	}
-	std::jthread thr{n_body_thread, curr_index, particles.numParticles, std::ref(particles), std::cref(info)};
+	/// Barrier for syncing all threads
+	std::barrier sync_point{info.numThreads};
+	//boost::barrier sync_point{info.numThreads};
 
-    //std::cout << positions[0].x << ' ' << positions[0].y << ' ' << positions[0].z << '\n';
+	std::vector<std::thread> threads;
+
+	for ( ; curr_index < (info.numThreads - 1) * step_index; curr_index += step_index)
+	{
+		threads.emplace_back(n_body_thread, curr_index, curr_index + step_index, std::ref(particles), std::cref(info), std::ref(sync_point));
+	}
+	threads.emplace_back(n_body_thread, curr_index, particles.numParticles, std::ref(particles), std::cref(info), std::ref(sync_point));
+
+	for (std::thread &thr : threads)
+        thr.join();
 
 }
-
-struct N_Body_Compute
-{
-
-
-
-};
 
 #endif
