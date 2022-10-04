@@ -2,47 +2,52 @@
 #include <vector>
 #include <random>
 #include <cmath>
+#include <chrono>
 
 #define GLM_ENABLE_EXPERIMENTAL
-//#define GLM_FORCE_CUDA
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
 
-// __device__ float dist2()
-// {
+#include "CLI/CLI.hpp"
 
+struct Computation_Info
+{
 
-    
-// }
+	Computation_Info(float _timeStep, unsigned _numIterations, unsigned _workGroupSize) :
+					 timeStep(_timeStep), numIterations(_numIterations), workGroupSize(_workGroupSize) { }
 
-struct Particulas
+	float timeStep;
+	unsigned numIterations;
+	
+	unsigned workGroupSize;
+	
+};
+
+struct Particle_Set
 {
 
     /**
-
-    Una particula debe guardar su posicion y velocidad actual
-    Se agrega el vector de aceleracion/fuerza para no tener que crear
-
+	A particle must store its currect position and velocty.
     */
-    Particulas(int _numParticulas, float _masa = 1.0f) : posiciones(_numParticulas), velocidades(_numParticulas), numParticulas(_numParticulas), masa(_masa)
+    Particle_Set(unsigned _numParticles, float _mass = 1.0f) : positions(_numParticles), velocities(_numParticles), numParticles(_numParticles), mass(_mass)
     {
         std::random_device rd;
         std::mt19937 e2(rd());
         std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
 
-        for (auto& posicion : posiciones)
+        for (auto& pos : positions)
         {
-            posicion.x = dist(e2);
-            posicion.y = dist(e2);
-            posicion.z = dist(e2);
+            pos.x = dist(e2);
+            pos.y = dist(e2);
+            pos.z = dist(e2);
         }
     }
 
-    std::vector<glm::vec3> posiciones;
-    std::vector<glm::vec3> velocidades;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> velocities;
 
-    const int numParticulas;
-    const float masa;
+    const int numParticles;
+    const float mass;
 
 };
 
@@ -77,11 +82,6 @@ __global__ void iteracionNCuerpos(glm::vec3 *posiciones, glm::vec3 *velocidades,
 
     velocidades[i] += aceleracion * deltaTiempo;
 	
-	
-	
-	
-    
-
 }
 
 __global__ void integracionNCuerpos(glm::vec3 *posiciones, glm::vec3 *velocidades,
@@ -95,42 +95,105 @@ __global__ void integracionNCuerpos(glm::vec3 *posiciones, glm::vec3 *velocidade
 	posiciones[i] += velocidades[i] * deltaTiempo;
 }
 
-int main()
+auto parse_arguments(int argc, char **argv) -> std::tuple<Particle_Set, Computation_Info>
+{
+	/// Parse arguments to form the particle set and the computation info
+	CLI::App app{"N-Body serial simulation"};
+
+	unsigned numParticles = 0;
+	float mass = 1.0f;
+	float dt = 1.0f;
+	unsigned iterations = 0;
+	unsigned workgroupSize = 32;
+
+    app.add_option("--particles", numParticles, "Particle count") -> required();
+	app.add_option("--mass", mass, "Mass of each particle (def=1.0[kg])");
+	app.add_option("--dt", dt, "Timestep between each iteration (def=1.0[s])");
+	app.add_option("--iterations", iterations, "Number of iterations of the simulation") -> required();
+	app.add_option("--workgroup_size", workgroupSize, "Number of threads per workgroup (def=32)");
+
+    //CLI11_PARSE(app, argc, argv);
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError &e) {
+        std::exit(app.exit(e));
+    }
+
+    std::cout << "Compute info:" << "\n";
+    std::cout << "\tParticle count: " << numParticles << " particles" << "\n";
+	std::cout << "\tParticle mass: " << mass << " [kg]" << "\n";
+	std::cout << "\tTimestep: " << dt << " [s]" << "\n";
+	std::cout << "\tIterations: " << iterations << " steps" << "\n";
+	std::cout << "\tWorkgroup size: " << workgroupSize << " threads" << "\n\n";
+
+	/// Form the particle set and the computation info
+	Particle_Set my_set{numParticles, mass};
+	Computation_Info info{dt, iterations, workgroupSize};
+
+	return {my_set, info};
+
+}
+
+int main(int argc, char **argv)
 {
 
-	int numParticulas = 1024 * 2;
-	float masa = 1.0e9f;
-	float deltaTiempo = 1.0f;
-
-	Particulas set_1(numParticulas, masa);
+	auto [particle_set, computation_info] = parse_arguments(argc, argv);
 	
-	glm::vec3* d_posiciones = nullptr;
-	glm::vec3* d_velocidades = nullptr;
+	/// Variables parsed from program arguments
+	unsigned numParticles = particle_set.numParticles;
+	float mass = particle_set.mass;
+	float timeStep = computation_info.timeStep;
+	unsigned numIterations = computation_info.numIterations;
+	unsigned workgroupSize = computation_info.workGroupSize;
 	
-	int size_memory = numParticulas * sizeof(glm::vec3);
+	/// Kernel variables for dispatching
+	dim3 threadsPerBlock = workgroupSize;
+	dim3 blocksPerGrid = ((numParticles + workgroupSize - 1) / workgroupSize);
 	
-	cudaMalloc((void **)&d_posiciones, size_memory);
-	cudaMalloc((void **)&d_velocidades, size_memory);
+	glm::vec3* d_positions = nullptr;
+	glm::vec3* d_velocities = nullptr;
 	
-	cudaMemcpy(d_posiciones, &set_1.posiciones[0], size_memory, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_velocidades, &set_1.velocidades[0], size_memory, cudaMemcpyHostToDevice);
-
-	dim3 threadsPerBlock(32);
-	dim3 blocksPerGrid((set_1.numParticulas + 31) / 32);
+	unsigned size_memory = numParticles * sizeof(glm::vec3);
 	
-	std::cout << set_1.posiciones[0].x << " " << set_1.posiciones[0].y << " " << set_1.posiciones[0].z << std::endl;
+	/// Start measuring time
+	auto start = std::chrono::steady_clock::now();
 	
-	for (int i = 0; i < 2000; ++i)
+	cudaMalloc((void **)&d_positions, size_memory);
+	cudaMalloc((void **)&d_velocities, size_memory);
+	
+	cudaMemcpy(d_positions, &particle_set.positions[0], size_memory, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_velocities, &particle_set.velocities[0], size_memory, cudaMemcpyHostToDevice);
+	
+	auto memcpy_to_device = std::chrono::steady_clock::now();
+	
+	for (unsigned iter = 0; iter < numIterations; ++iter)
 	{
-		iteracionNCuerpos<<<blocksPerGrid, threadsPerBlock>>>(d_posiciones, d_velocidades, numParticulas, masa, deltaTiempo);
-		integracionNCuerpos<<<blocksPerGrid, threadsPerBlock>>>(d_posiciones, d_velocidades, numParticulas, deltaTiempo);
-		cudaMemcpy(&set_1.posiciones[0], d_posiciones, size_memory, cudaMemcpyDeviceToHost);
-		std::cout << set_1.posiciones[0].x << " " << set_1.posiciones[0].y << " " << set_1.posiciones[0].z << std::endl;
+		iteracionNCuerpos<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, numParticles, mass, timeStep);
+		integracionNCuerpos<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, numParticles, timeStep);
 	}
 	
-	//cudaMemcpy(&set_1.posiciones[0], d_posiciones, size_memory, cudaMemcpyDeviceToHost);
+	auto kernel_compute = std::chrono::steady_clock::now();
 	
+	cudaMemcpy(&particle_set.positions[0], d_positions, size_memory, cudaMemcpyDeviceToHost);
+	cudaMemcpy(&particle_set.velocities[0], d_velocities, size_memory, cudaMemcpyDeviceToHost);
 	
+	/// Finish measuring time
+    auto finish = std::chrono::steady_clock::now();
+	
+	double duration_host_device = std::chrono::duration_cast<std::chrono::microseconds>(memcpy_to_device - start).count();
+	double duration_compute = std::chrono::duration_cast<std::chrono::microseconds>(kernel_compute - memcpy_to_device).count();
+	double duration_device_host = std::chrono::duration_cast<std::chrono::microseconds>(finish - kernel_compute).count();
 
+    std::cout << "Time to copy memory from host to device: " << "\n";
+    std::cout << "\t" << duration_host_device << " [us]" << "\n";
+
+    std::cout << "Compute elapsed time: " << "\n";
+    std::cout << "\t" << duration_compute << " [us]" << "\n";
+	
+	std::cout << "Time to copy memory from device back to host: " << "\n";
+    std::cout << "\t" << duration_device_host << " [us]" << "\n";
+	
+	std::cout << "Total time: " << "\n";
+    std::cout << "\t" << duration_host_device + duration_compute + duration_device_host << " [us]" << "\n";
 
 }

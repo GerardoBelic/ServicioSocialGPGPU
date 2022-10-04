@@ -1,1 +1,1 @@
-nvcc -I../../dependencies n_cuerpos.cu -o n_cuerpos
+nvcc -I../../dependencies/include -std=c++17 n_body.cu -o n_body
