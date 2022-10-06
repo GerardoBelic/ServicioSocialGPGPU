@@ -4,6 +4,8 @@
 #include <cmath>
 #include <chrono>
 
+#include <cstdio>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
 #include "glm/gtx/norm.hpp"
@@ -29,22 +31,38 @@ struct Particle_Set
     /**
 	A particle must store its currect position and velocty.
     */
-    Particle_Set(unsigned _numParticles, float _mass = 1.0f) : positions(_numParticles), velocities(_numParticles), numParticles(_numParticles), mass(_mass)
+    Particle_Set(unsigned _numParticles, float _mass = 1.0f) : numParticles(_numParticles), mass(_mass)
     {
+		/// Allocate in pinned memory
+		unsigned size_memory = numParticles * sizeof(glm::vec3);
+
+		cudaMallocHost((void **)&positions, size_memory);
+		cudaMallocHost((void **)&velocities, size_memory);
+		
         std::random_device rd;
         std::mt19937 e2(rd());
         std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
 
-        for (auto& pos : positions)
+        for (unsigned i = 0; i < numParticles; ++i)
         {
-            pos.x = dist(e2);
-            pos.y = dist(e2);
-            pos.z = dist(e2);
+            (positions + i)->x = dist(e2);
+            (positions + i)->y = dist(e2);
+            (positions + i)->z = dist(e2);
+			
+			(velocities + i)->x = 0.0f;
+            (velocities + i)->y = 0.0f;
+            (velocities + i)->z = 0.0f;
         }
     }
+	
+	~Particle_Set()
+	{
+		//cudaFreeHost(positions);
+		//cudaFreeHost(velocities);
+	}
 
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec3> velocities;
+    glm::vec3* positions = nullptr;
+    glm::vec3* velocities = nullptr;
 
     const int numParticles;
     const float mass;
@@ -52,8 +70,14 @@ struct Particle_Set
 };
 
 __global__ void n_body_vel_calc(glm::vec3 *positions, glm::vec3 *velocities,
-								 unsigned numParticles, float mass, float deltaTime)
+								  unsigned numParticles, float mass, float deltaTime)
 {
+	
+	/// Shared memory between a thread group
+	/// The size is equal to the number of threads in a group;
+	/// this implies that size==blockDim
+	extern __shared__ glm::vec3 temp_tile[];
+	
 
     unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -65,15 +89,25 @@ __global__ void n_body_vel_calc(glm::vec3 *positions, glm::vec3 *velocities,
 	glm::vec3 cur_position = positions[i];
 	glm::vec3 force(0.0f, 0.0f, 0.0f);
 
-    for (unsigned j = 0; j < numParticles; ++j)
+    for (unsigned tile = 0; tile < numParticles; tile += blockDim.x)
     {
-        if (i == j)
-            continue;
+		temp_tile[threadIdx.x] = positions[tile + threadIdx.x];
+		__syncthreads();
 
-		float distance2 = glm::distance2(cur_position, positions[j]);
-        glm::vec3 direction = glm::normalize(positions[j] - cur_position);
+		for (unsigned j = 0; j < blockDim.x; ++j)
+		{
+			//if (i == j || ((tile == (numParticles - 1) / blockDim.x) && numParticles % j < ))
+			if (i == j || (tile + j) >= numParticles)
+				continue;
 
-        force += G * mass * mass * direction / distance2;
+			float distance2 = glm::distance2(cur_position, temp_tile[j]);
+			glm::vec3 direction = glm::normalize(temp_tile[j] - cur_position);
+
+			force += G * mass * mass * direction / distance2;
+		}
+		
+		__syncthreads();
+        
     }
 	
 	glm::vec3 acceleration = force / mass;
@@ -109,6 +143,7 @@ auto parse_arguments(int argc, char **argv) -> std::tuple<Particle_Set, Computat
 	app.add_option("--dt", dt, "Timestep between each iteration (def=1.0[s])");
 	app.add_option("--iterations", iterations, "Number of iterations of the simulation") -> required();
 	app.add_option("--workgroup_size", workgroupSize, "Number of threads per workgroup (def=32)");
+	
 
     //CLI11_PARSE(app, argc, argv);
     try {
@@ -165,8 +200,8 @@ int main(int argc, char **argv)
 	/// Wait for malloc to finish
 	auto device_malloc = std::chrono::steady_clock::now();
 	
-	cudaMemcpy(d_positions, &particle_set.positions[0], size_memory, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_velocities, &particle_set.velocities[0], size_memory, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_positions, particle_set.positions, size_memory, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_velocities, particle_set.velocities, size_memory, cudaMemcpyHostToDevice);
 	
 	/// Wait for memcpy to finish
 	cudaDeviceSynchronize();
@@ -175,8 +210,8 @@ int main(int argc, char **argv)
 	
 	for (unsigned iter = 0; iter < numIterations; ++iter)
 	{
-		n_body_vel_calc<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, numParticles, mass, timeStep);
-		n_body_pos_calc<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, numParticles, timeStep);
+		n_body_vel_calc<<<blocksPerGrid, threadsPerBlock, workgroupSize * sizeof(glm::vec3)>>>(d_positions, d_velocities, numParticles, mass, timeStep);
+		n_body_pos_calc<<<blocksPerGrid, threadsPerBlock, workgroupSize * sizeof(glm::vec3)>>>(d_positions, d_velocities, numParticles, timeStep);
 	}
 	
 	/// Wait for computation to finish
