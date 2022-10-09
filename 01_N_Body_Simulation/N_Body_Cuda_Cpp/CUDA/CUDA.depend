@@ -1,0 +1,336 @@
+# depslib dependency file v1.0
+1665278148 source:f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_cuda_cpp\cuda\n_body_upgraded.cu
+	<iostream>
+	<vector>
+	<random>
+	<cmath>
+	<chrono>
+	"CLI/CLI.hpp"
+	"helper_math.h"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\cli.hpp
+	"Version.hpp"
+	"Macros.hpp"
+	"StringTools.hpp"
+	"Error.hpp"
+	"TypeTools.hpp"
+	"Split.hpp"
+	"ConfigFwd.hpp"
+	"Validators.hpp"
+	"FormatterFwd.hpp"
+	"Option.hpp"
+	"App.hpp"
+	"Config.hpp"
+	"Formatter.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\version.hpp
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\macros.hpp
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\stringtools.hpp
+	<algorithm>
+	<iomanip>
+	<locale>
+	<sstream>
+	<stdexcept>
+	<string>
+	<type_traits>
+	<vector>
+	"Macros.hpp"
+	"impl/StringTools_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\stringtools_inl.hpp
+	<CLI/StringTools.hpp>
+	<string>
+	<vector>
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\error.hpp
+	<exception>
+	<stdexcept>
+	<string>
+	<utility>
+	<vector>
+	"Macros.hpp"
+	"StringTools.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\typetools.hpp
+	<cstdint>
+	<exception>
+	<limits>
+	<memory>
+	<string>
+	<type_traits>
+	<utility>
+	<vector>
+	"StringTools.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\split.hpp
+	<string>
+	<tuple>
+	<utility>
+	<vector>
+	"Macros.hpp"
+	"impl/Split_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\split_inl.hpp
+	<CLI/Split.hpp>
+	<string>
+	<tuple>
+	<utility>
+	<vector>
+	<CLI/Error.hpp>
+	<CLI/StringTools.hpp>
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\configfwd.hpp
+	<algorithm>
+	<fstream>
+	<iostream>
+	<string>
+	<vector>
+	"Error.hpp"
+	"StringTools.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\validators.hpp
+	"Error.hpp"
+	"Macros.hpp"
+	"StringTools.hpp"
+	"TypeTools.hpp"
+	<cmath>
+	<cstdint>
+	<functional>
+	<iostream>
+	<limits>
+	<map>
+	<memory>
+	<string>
+	<utility>
+	<vector>
+	<filesystem>
+	<filesystem>
+	<sys/stat.h>
+	<sys/types.h>
+	"impl/Validators_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\validators_inl.hpp
+	<CLI/Validators.hpp>
+	<CLI/Macros.hpp>
+	<CLI/StringTools.hpp>
+	<CLI/TypeTools.hpp>
+	<map>
+	<string>
+	<utility>
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\formatterfwd.hpp
+	<functional>
+	<map>
+	<string>
+	<utility>
+	<vector>
+	"StringTools.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\option.hpp
+	<algorithm>
+	<functional>
+	<memory>
+	<set>
+	<string>
+	<tuple>
+	<utility>
+	<vector>
+	"Error.hpp"
+	"Macros.hpp"
+	"Split.hpp"
+	"StringTools.hpp"
+	"Validators.hpp"
+	"impl/Option_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\option_inl.hpp
+	<CLI/Option.hpp>
+	<algorithm>
+	<string>
+	<utility>
+	<vector>
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\app.hpp
+	<algorithm>
+	<cstdint>
+	<functional>
+	<iostream>
+	<iterator>
+	<memory>
+	<numeric>
+	<set>
+	<sstream>
+	<string>
+	<utility>
+	<vector>
+	"ConfigFwd.hpp"
+	"Error.hpp"
+	"FormatterFwd.hpp"
+	"Macros.hpp"
+	"Option.hpp"
+	"Split.hpp"
+	"StringTools.hpp"
+	"TypeTools.hpp"
+	"impl/App_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\app_inl.hpp
+	<CLI/App.hpp>
+	<algorithm>
+	<memory>
+	<string>
+	<utility>
+	<vector>
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\config.hpp
+	<algorithm>
+	<cctype>
+	<fstream>
+	<iostream>
+	<string>
+	<utility>
+	<vector>
+	"App.hpp"
+	"ConfigFwd.hpp"
+	"StringTools.hpp"
+	"impl/Config_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\config_inl.hpp
+	<CLI/Config.hpp>
+	<algorithm>
+	<string>
+	<utility>
+	<vector>
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\formatter.hpp
+	<algorithm>
+	<string>
+	<vector>
+	"App.hpp"
+	"FormatterFwd.hpp"
+	"impl/Formatter_inl.hpp"
+
+1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\cli\impl\formatter_inl.hpp
+	<CLI/Formatter.hpp>
+	<algorithm>
+	<string>
+	<utility>
+	<vector>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\helper_math.h
+	"cuda_runtime.h"
+	<math.h>
+
+1665275316 source:f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_cuda_cpp\cuda\n_body.cu
+	<iostream>
+	<vector>
+	<random>
+	<cmath>
+	<chrono>
+	<tuple>
+	"CLI/CLI.hpp"
+	"helper_math.h"
+	"helper_cuda.h"
+
+1665199414 source:f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_cuda_cpp\cuda\n_body_coop.cu
+	<iostream>
+	<vector>
+	<random>
+	<cmath>
+	<chrono>
+	<cuda_runtime.h>
+	<helper_math.h>
+	"CLI/CLI.hpp"
+	<helper_functions.h>
+	<helper_cuda.h>
+	<cooperative_groups.h>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\helper_functions.h
+	<assert.h>
+	<exception.h>
+	<math.h>
+	<stdio.h>
+	<stdlib.h>
+	<algorithm>
+	<fstream>
+	<iostream>
+	<string>
+	<vector>
+	<helper_image.h>
+	<helper_string.h>
+	<helper_timer.h>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\exception.h
+	<stdlib.h>
+	<exception>
+	<iostream>
+	<stdexcept>
+	<string>
+	<sstream>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\helper_image.h
+	<assert.h>
+	<exception.h>
+	<math.h>
+	<stdint.h>
+	<algorithm>
+	<fstream>
+	<iostream>
+	<string>
+	<vector>
+	<helper_string.h>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\helper_string.h
+	<stdio.h>
+	<stdlib.h>
+	<fstream>
+	<string>
+	<string.h>
+	<strings.h>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\helper_timer.h
+	<vector>
+	<exception.h>
+	<windows.h>
+	<sys/time.h>
+	<ctime>
+
+1643895744 c:\users\geraw\desktop\cuda-samples-master\common\helper_cuda.h
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<helper_string.h>
+
+1665200457 source:f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_cuda_cpp\cuda\n_body_test_util.cu
+	<iostream>
+	<vector>
+	<random>
+	<cmath>
+	<chrono>
+	<cuda_runtime.h>
+	<helper_math.h>
+	"CLI/CLI.hpp"
+	<helper_functions.h>
+	<helper_cuda.h>
+	<cooperative_groups.h>
+
+1643895744 f:\repositorios\serviciosocialgpgpu\dependencies\include\cuda\helper_math.h
+	"cuda_runtime.h"
+	<math.h>
+
+1643895744 f:\repositorios\serviciosocialgpgpu\dependencies\include\cuda\helper_cuda.h
+	<stdint.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<helper_string.h>
+
+1643895744 f:\repositorios\serviciosocialgpgpu\dependencies\include\cuda\helper_string.h
+	<stdio.h>
+	<stdlib.h>
+	<fstream>
+	<string>
+	<string.h>
+	<strings.h>
+

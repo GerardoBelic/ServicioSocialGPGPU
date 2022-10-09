@@ -76,28 +76,30 @@ __global__ void n_body_vel_calc(glm::vec3 *positions, glm::vec3 *velocities,
 	/// Shared memory between a thread group
 	/// The size is equal to the number of threads in a group;
 	/// this implies that size==blockDim
-	extern __shared__ glm::vec3 temp_tile[];
+	__shared__ glm::vec3 temp_tile[256];
 	
 
     unsigned i = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if (i >= numParticles)
-        return;
+    //if (i >= numParticles)
+        //return;
 
     float G = 6.6743e-11f;
 	
 	glm::vec3 cur_position = positions[i];
 	glm::vec3 force(0.0f, 0.0f, 0.0f);
 
-    for (unsigned tile = 0; tile < numParticles; tile += blockDim.x)
+    for (unsigned tile = 0; tile < numParticles; tile += 256)
     {
 		temp_tile[threadIdx.x] = positions[tile + threadIdx.x];
 		__syncthreads();
 
-		for (unsigned j = 0; j < blockDim.x; ++j)
+		for (unsigned j = 0; j < 256; ++j)
 		{
 			//if (i == j || ((tile == (numParticles - 1) / blockDim.x) && numParticles % j < ))
-			if (i == j || (tile + j) >= numParticles)
+			//if (i == j || (tile + j) >= numParticles)
+				//continue;
+			if (i == j)
 				continue;
 
 			float distance2 = glm::distance2(cur_position, temp_tile[j]);
@@ -106,7 +108,7 @@ __global__ void n_body_vel_calc(glm::vec3 *positions, glm::vec3 *velocities,
 			force += G * mass * mass * direction / distance2;
 		}
 		
-		__syncthreads();
+		//__syncthreads();
         
     }
 	
@@ -177,7 +179,8 @@ int main(int argc, char **argv)
 	float mass = particle_set.mass;
 	float timeStep = computation_info.timeStep;
 	unsigned numIterations = computation_info.numIterations;
-	unsigned workgroupSize = computation_info.workGroupSize;
+	//unsigned workgroupSize = computation_info.workGroupSize;
+	unsigned workgroupSize = 256;
 	
 	/// Kernel variables for dispatching
 	dim3 threadsPerBlock = workgroupSize;
@@ -210,8 +213,10 @@ int main(int argc, char **argv)
 	
 	for (unsigned iter = 0; iter < numIterations; ++iter)
 	{
-		n_body_vel_calc<<<blocksPerGrid, threadsPerBlock, workgroupSize * sizeof(glm::vec3)>>>(d_positions, d_velocities, numParticles, mass, timeStep);
-		n_body_pos_calc<<<blocksPerGrid, threadsPerBlock, workgroupSize * sizeof(glm::vec3)>>>(d_positions, d_velocities, numParticles, timeStep);
+		//n_body_vel_calc<<<blocksPerGrid, threadsPerBlock, workgroupSize * sizeof(glm::vec3)>>>(d_positions, d_velocities, numParticles, mass, timeStep);
+		//n_body_pos_calc<<<blocksPerGrid, threadsPerBlock, workgroupSize * sizeof(glm::vec3)>>>(d_positions, d_velocities, numParticles, timeStep);
+		n_body_vel_calc<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, numParticles, mass, timeStep);
+		n_body_pos_calc<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, numParticles, timeStep);
 	}
 	
 	/// Wait for computation to finish

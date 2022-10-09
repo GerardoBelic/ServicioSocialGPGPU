@@ -6,10 +6,24 @@
 #include <random>
 #include <cmath>
 #include <string>
+#include <chrono>
 
 #include <glm/glm.hpp>
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+#include "CLI/CLI.hpp"
+
+struct Computation_Info
+{
+
+	Computation_Info(float _timeStep, unsigned _numIterations, unsigned _workGroupSize) :
+					 timeStep(_timeStep), numIterations(_numIterations), workGroupSize(_workGroupSize) { }
+
+	float timeStep;
+	unsigned numIterations;
+	
+	unsigned workGroupSize;
+	
+};
 
 bool check_shader_compile_status(GLuint obj) {
     GLint status;
@@ -25,7 +39,6 @@ bool check_shader_compile_status(GLuint obj) {
     return true;
 }
 
-// helper to check and display for shader linker error
 bool check_program_link_status(GLuint obj) {
     GLint status;
     glGetProgramiv(obj, GL_LINK_STATUS, &status);
@@ -44,7 +57,7 @@ bool check_program_link_status(GLuint obj) {
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-struct Particulas
+struct Particle_Set
 {
 
     /**
@@ -53,29 +66,68 @@ struct Particulas
     Se agrega el vector de aceleracion/fuerza para no tener que crear
 
     */
-    Particulas(int _numParticulas, float _masa = 1.0f) : posiciones(_numParticulas), velocidades(_numParticulas), numParticulas(_numParticulas), masa(_masa)
+    Particle_Set(unsigned _numParticles, float _mass = 1.0f) : positions(_numParticles), velocities(_numParticles), numParticles(_numParticles), mass(_mass)
     {
         std::random_device rd;
         std::mt19937 e2(rd());
         std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
 
-        for (auto& posicion : posiciones)
+        for (auto& pos : positions)
         {
-            posicion.x = dist(e2);
-            posicion.y = dist(e2);
-            posicion.z = dist(e2);
+            pos.x = dist(e2);
+            pos.y = dist(e2);
+            pos.z = dist(e2);
         }
     }
 
-    std::vector<glm::vec3> posiciones;
-    std::vector<glm::vec3> velocidades;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> velocities;
 
-    const int numParticulas;
-    const float masa;
+    const unsigned numParticles;
+    const float mass;
 
 };
 
-int main()
+auto parse_arguments(int argc, char **argv) -> std::tuple<Particle_Set, Computation_Info>
+{
+	/// Parse arguments to form the particle set and the computation info
+	CLI::App app{"N-Body simulation"};
+
+	unsigned numParticles = 0;
+	float mass = 1.0f;
+	float dt = 1.0f;
+	unsigned iterations = 0;
+	unsigned workgroupSize = 32;
+
+    app.add_option("--particles", numParticles, "Particle count") -> required();
+	app.add_option("--mass", mass, "Mass of each particle (def=1.0[kg])");
+	app.add_option("--dt", dt, "Timestep between each iteration (def=1.0[s])");
+	app.add_option("--iterations", iterations, "Number of iterations of the simulation") -> required();
+	app.add_option("--workgroup_size", workgroupSize, "Number of threads per workgroup (def=32)");
+
+    //CLI11_PARSE(app, argc, argv);
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError &e) {
+        std::exit(app.exit(e));
+    }
+
+    std::cout << "Compute info:" << "\n";
+    std::cout << "\tParticle count: " << numParticles << " particles" << "\n";
+	std::cout << "\tParticle mass: " << mass << " [kg]" << "\n";
+	std::cout << "\tTimestep: " << dt << " [s]" << "\n";
+	std::cout << "\tIterations: " << iterations << " steps" << "\n";
+	std::cout << "\tWorkgroup size: " << workgroupSize << " threads" << "\n\n";
+
+	/// Form the particle set and the computation info
+	Particle_Set my_set{numParticles, mass};
+	Computation_Info info{dt, iterations, workgroupSize};
+
+	return {my_set, info};
+
+}
+
+int main(int argc, char **argv)
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -107,16 +159,16 @@ int main()
     const char *source;
     int length;
 
-    std::string n_body_iteration = R"""(
+    std::string n_body_vel_calculation = R"""(
         #version 460
-        layout(local_size_x=32) in;
+        layout(local_size_x=256) in;
 
-        layout(location = 0) uniform int numParticulas;
-        layout(location = 1) uniform float masa;
+        layout(location = 0) uniform int numParticles;
+        layout(location = 1) uniform float mass;
         layout(location = 2) uniform float dt;
 
-        layout(std430, binding=0) buffer pblock { vec3 posiciones[]; };
-        layout(std430, binding=1) buffer vblock { vec3 velocidades[]; };
+        layout(std430, binding=0) buffer pblock { vec3 positions[]; };
+        layout(std430, binding=1) buffer vblock { vec3 velocities[]; };
 
         float dist2(vec3 A, vec3 B)
         {
@@ -124,170 +176,178 @@ int main()
             return dot( C, C );
         }
 
-        void main() {
+        void main()
+		{
             int i = int(gl_GlobalInvocationID);
 
-            if (i >= numParticulas)
+            if (i >= numParticles)
                 return;
 
             float G = 6.6743e-11f;
 
-            vec3 fuerza = vec3(0.0);
+            vec3 force = vec3(0.0);
 
-            for (int j = 0; j < numParticulas; ++j)
+            for (unsigned j = 0; j < numParticles; ++j)
             {
                 if (i == j)
                     continue;
 
-                float distancia2 = dist2(posiciones[i], posiciones[j]);
-                vec3 direccion = normalize(posiciones[j] - posiciones[i]);
+                float distance2 = dist2(positions[i], positions[j]);
+                vec3 direction = normalize(positions[j] - positions[i]);
 
-                fuerza += G * masa * masa * direccion / distancia2;
+                force += G * mass * mass * direction / distance2;
             }
 
-            vec3 aceleracion = fuerza / masa;
+            vec3 acceleration = force / mass;
 
-            velocidades[i] += aceleracion * dt;
+            velocities[i] += acceleration * dt;
 
         }   )""";
 
     // program and shader handles
-    unsigned int acceleration_program, acceleration_shader;
+    unsigned int n_body_vel_program, n_body_vel_shader;
 
     // create and compiler vertex shader
-    acceleration_shader = glCreateShader(GL_COMPUTE_SHADER);
-    source = n_body_iteration.c_str();
-    length = n_body_iteration.size();
-    glShaderSource(acceleration_shader, 1, &source, &length);
-    glCompileShader(acceleration_shader);
-    if(!check_shader_compile_status(acceleration_shader)) {
+    n_body_vel_shader = glCreateShader(GL_COMPUTE_SHADER);
+    source = n_body_vel_calculation.c_str();
+    length = n_body_vel_calculation.size();
+    glShaderSource(n_body_vel_shader, 1, &source, &length);
+    glCompileShader(n_body_vel_shader);
+    if(!check_shader_compile_status(n_body_vel_shader)) {
         glfwDestroyWindow(window);
         glfwTerminate();
         return 1;
     }
 
     // create program
-    acceleration_program = glCreateProgram();
+    n_body_vel_program = glCreateProgram();
 
     // attach shaders
-    glAttachShader(acceleration_program, acceleration_shader);
+    glAttachShader(n_body_vel_program, n_body_vel_shader);
 
     // link the program and check for errors
-    glLinkProgram(acceleration_program);
-    check_program_link_status(acceleration_program);
+    glLinkProgram(n_body_vel_program);
+    check_program_link_status(n_body_vel_program);
 
-    std::string n_body_integration = R"""(
+    std::string n_body_pos_calculation = R"""(
         #version 460
-        layout(local_size_x=32) in;
+        layout(local_size_x=256) in;
 
-        layout(location = 0) uniform int numParticulas;
+        layout(location = 0) uniform int numParticles;
         layout(location = 1) uniform float dt;
 
-        layout(std430, binding=0) buffer pblock { vec3 posiciones[]; };
-        layout(std430, binding=1) buffer vblock { vec3 velocidades[]; };
+        layout(std430, binding=0) buffer pblock { vec3 positions[]; };
+        layout(std430, binding=1) buffer vblock { vec3 velocities[]; };
 
 
-        void main() {
+        void main()
+		{
             int i = int(gl_GlobalInvocationID);
 
-            if (i >= numParticulas)
+            if (i >= numParticles)
                 return;
 
-            posiciones[i] += velocidades[i] * dt;
+            positions[i] += velocities[i] * dt;
 
         }   )""";
 
     // program and shader handles
-    unsigned int integrate_program, integrate_shader;
+    unsigned int n_body_pos_program, n_body_pos_shader;
 
     // create and compiler vertex shader
-    integrate_shader = glCreateShader(GL_COMPUTE_SHADER);
-    source = n_body_integration.c_str();
-    length = n_body_integration.size();
-    glShaderSource(integrate_shader, 1, &source, &length);
-    glCompileShader(integrate_shader);
-    if(!check_shader_compile_status(integrate_shader)) {
+    n_body_pos_shader = glCreateShader(GL_COMPUTE_SHADER);
+    source = n_body_pos_calculation.c_str();
+    length = n_body_pos_calculation.size();
+    glShaderSource(n_body_pos_shader, 1, &source, &length);
+    glCompileShader(n_body_pos_shader);
+    if(!check_shader_compile_status(n_body_pos_shader)) {
         glfwDestroyWindow(window);
         glfwTerminate();
         return 1;
     }
 
     // create program
-    integrate_program = glCreateProgram();
+    n_body_pos_program = glCreateProgram();
 
     // attach shaders
-    glAttachShader(integrate_program, integrate_shader);
+    glAttachShader(n_body_pos_program, n_body_pos_shader);
 
     // link the program and check for errors
-    glLinkProgram(integrate_program);
-    check_program_link_status(integrate_program);
+    glLinkProgram(n_body_pos_program);
+    check_program_link_status(n_body_pos_program);
+	
+	
+	
+	auto [particle_set, computation_info] = parse_arguments(argc, argv);
 
-    ///Creacion de las particulas y copia a buffers
-    int numParticulas = 1024 * 2;
-	float masa = 1.0e9f;
-	float deltaTiempo = 1.0f;
+	/// Variables parsed from program arguments
+	unsigned numParticles = particle_set.numParticles;
+	float mass = particle_set.mass;
+	float timeStep = computation_info.timeStep;
+	unsigned numIterations = computation_info.numIterations;
+	unsigned workgroupSize = computation_info.workGroupSize;
 
-	Particulas set_1(numParticulas, masa);
+	// generate vbos
+    unsigned int positions_vbo, velocities_vbo;
 
-	// generate positions_vbos and vaos
-    unsigned int posiciones_vbo, velocidades_vbo;
+    glGenBuffers(1, &positions_vbo);
+    glGenBuffers(1, &velocities_vbo);
 
-    glGenBuffers(1, &posiciones_vbo);
-    glGenBuffers(1, &velocidades_vbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocities_vbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec3) * numParticles, &particle_set.velocities[0], GL_STATIC_DRAW);
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, velocidades_vbo);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec3) * numParticulas, &set_1.velocidades[0], GL_STATIC_DRAW);
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, posiciones_vbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, positions_vbo);
     // fill with initial data
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec3) * numParticulas, &set_1.posiciones[0], GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(glm::vec3) * numParticles, &particle_set.positions[0], GL_STATIC_DRAW);
 
 
-	unsigned int ssbos[] = {posiciones_vbo, velocidades_vbo};
+	unsigned int ssbos[] = {positions_vbo, velocities_vbo};
     glBindBuffersBase(GL_SHADER_STORAGE_BUFFER, 0, 2, ssbos);
 
     // Carga de variables uniformes
-    glUseProgram(acceleration_program);
-    glUniform1i(0, numParticulas);
-    glUniform1f(1, masa);
-    glUniform1f(2, deltaTiempo);
+    glUseProgram(n_body_vel_program);
+    glUniform1i(0, numParticles);
+    glUniform1f(1, mass);
+    glUniform1f(2, timeStep);
 
-    glUseProgram(integrate_program);
-    glUniform1i(0, numParticulas);
-    glUniform1f(1, deltaTiempo);
-
-    std::cout << set_1.posiciones[0].x << " " << set_1.posiciones[0].y << " " << set_1.posiciones[0].z << "\n";
+    glUseProgram(n_body_pos_program);
+    glUniform1i(0, numParticles);
+    glUniform1f(1, timeStep);
+	
+	/// Start measuring time
+	auto start = std::chrono::steady_clock::now();
 
     // Despacho de programa
-    for (int i = 0; i < 2000; ++i)
+    for (unsigned iter = 0; iter < numIterations; ++iter)
     {
-        glUseProgram(acceleration_program);
+        glUseProgram(n_body_vel_program);
 
-        glDispatchCompute((numParticulas + 31)/32, 1, 1);
+        glDispatchCompute((numParticles + 255)/256, 1, 1);
+		
+		/// Sync point
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        glUseProgram(integrate_program);
+        glUseProgram(n_body_pos_program);
 
-        glDispatchCompute((numParticulas + 31)/32, 1, 1);
+        glDispatchCompute((numParticles + 255)/256, 1, 1);
+		
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, posiciones_vbo);
-        glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::vec3) * numParticulas, &set_1.posiciones[0]);
-
-        std::cout << set_1.posiciones[0].x << " " << set_1.posiciones[0].y << " " << set_1.posiciones[0].z << "\n";
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, posiciones_vbo);
+        //glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(glm::vec3) * numParticulas, &set_1.posiciones[0]);
     }
+	
+	/// Finish measuring time
+	auto finish = std::chrono::steady_clock::now();
 
+	double duration = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
+
+	std::cout << "Compute elapsed time: " << "\n";
+    std::cout << "\t" << duration << " [us] (" << duration/1e3 << " [ms]) (" << duration/1e6 << " [s])" << "\n";
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
 
     glfwTerminate();
     return 0;
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
 }
