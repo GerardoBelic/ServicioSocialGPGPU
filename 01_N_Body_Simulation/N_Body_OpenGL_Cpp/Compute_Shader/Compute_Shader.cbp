@@ -20,7 +20,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--particles=25600 --mass=1e9 --dt=1.0 --iterations=2000 --workgroup_size=256" />
+				<Option parameters="--particles=25600 --mass=1e9 --dt=1.0 --iterations=20 --workgroup_size=128" />
 				<Compiler>
 					<Add option="-O2" />
 					<Add directory="../../../dependencies/include" />
@@ -41,11 +41,11 @@
 		<Unit filename="glad.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="n_body.cpp" />
-		<Unit filename="n_body_upgraded.cpp">
+		<Unit filename="n_body.cpp">
 			<Option compile="0" />
 			<Option link="0" />
 		</Unit>
+		<Unit filename="n_body_upgraded.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

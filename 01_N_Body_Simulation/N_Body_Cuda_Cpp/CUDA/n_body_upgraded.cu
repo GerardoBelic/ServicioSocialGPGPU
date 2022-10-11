@@ -27,22 +27,31 @@ struct Particle_Set
     /**
 	A particle must store its currect position and velocty.
     */
-    Particle_Set(unsigned _numParticles, float _mass = 1.0f) : positions(_numParticles), velocities(_numParticles), numParticles(_numParticles), mass(_mass)
+    Particle_Set(unsigned _numParticles, float _mass = 1.0f) : numParticles(_numParticles), mass(_mass)
     {
+
+        unsigned size_memory = numParticles * sizeof(float3);
+
+        cudaMallocHost((void**)&positions, size_memory);
+        cudaMallocHost((void**)&velocities, size_memory);
+
         std::random_device rd;
         std::mt19937 e2(rd());
         std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
 
-        for (auto& pos : positions)
+        for (unsigned i = 0; i < numParticles; ++i)
         {
-            pos.x = dist(e2);
-            pos.y = dist(e2);
-            pos.z = dist(e2);
+            positions[i].x = dist(e2);
+            positions[i].y = dist(e2);
+            positions[i].z = dist(e2);
+
+            velocities[i] = make_float3(0.0f, 0.0f, 0.0f);
         }
+
     }
 
-    std::vector<float3> positions;
-    std::vector<float3> velocities;
+    float3* positions;
+    float3* velocities;
 
     const int numParticles;
     const float mass;
@@ -55,7 +64,7 @@ __device__ float dist2(float3 A, float3 B)
     return dot(C, C);
 }
 
-__global__ void n_body_vel_calc(float3* __restrict__ positions, float3 * __restrict__ velocities, unsigned workgroupSize,
+__global__ void n_body_vel_calc(float3* positions, float3 * velocities, unsigned workgroupSize,
 								 unsigned numParticles, float mass, float deltaTime)
 {
     /// Shared memory between a thread group
@@ -173,6 +182,9 @@ int main(int argc, char **argv)
 
 	unsigned size_memory = numParticles * sizeof(float3);
 
+	/// This is only to initialize the CUDA context and measure the start time correctly
+	cudaDeviceSynchronize();
+
 	/// Start measuring time
 	auto start = std::chrono::steady_clock::now();
 
@@ -185,8 +197,8 @@ int main(int argc, char **argv)
 	/// Wait for malloc to finish
 	auto device_malloc = std::chrono::steady_clock::now();
 
-	cudaMemcpy(d_positions, &particle_set.positions[0], size_memory, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_velocities, &particle_set.velocities[0], size_memory, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_positions, particle_set.positions, size_memory, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_velocities, particle_set.velocities, size_memory, cudaMemcpyHostToDevice);
 
 	/// Wait for memcpy to finish
 	cudaDeviceSynchronize();

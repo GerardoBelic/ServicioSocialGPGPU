@@ -5,10 +5,10 @@
 #include <chrono>
 #include <tuple>
 
-#include "CLI/CLI.hpp"
+#include <CLI/CLI.hpp>
 
-#include "helper_math.h"
-#include "helper_cuda.h"
+#include <helper_math.h>
+//#include "helper_cuda.h"
 
 struct Computation_Info
 {
@@ -166,6 +166,9 @@ int main(int argc, char **argv)
 	float3* d_velocities = nullptr;
 
 	unsigned size_memory = numParticles * sizeof(float3);
+
+	/// This is only to initialize the CUDA context and measure the start time correctly
+	cudaDeviceSynchronize();
 
 	/// Start measuring time
 	auto start = std::chrono::steady_clock::now();

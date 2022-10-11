@@ -344,7 +344,7 @@ int main(int argc, char **argv)
 	glGenQueries(1, &queryID);
 	glBeginQuery(GL_TIME_ELAPSED, queryID);
 
-    // Despacho de programa
+    // Compute dispatch
     for (unsigned iter = 0; iter < numIterations; ++iter)
     {
         glUseProgram(n_body_vel_program);

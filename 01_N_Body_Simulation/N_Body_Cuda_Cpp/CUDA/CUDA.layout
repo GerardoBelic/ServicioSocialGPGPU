@@ -2,29 +2,19 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Release" />
-	<File name="n_body_upgraded.cu" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="n_body.cu" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1558" topLine="80" />
+			<Cursor1 position="1127" topLine="18" />
 		</Cursor>
 	</File>
-	<File name="n_body_coop.cu" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="n_body_upgraded.cu" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="6846" topLine="196" />
+			<Cursor1 position="206" topLine="63" />
 		</Cursor>
 	</File>
-	<File name="n_body_eigen.cu" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="n_body_upgraded_2.cu" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="21" topLine="24" />
-		</Cursor>
-	</File>
-	<File name="n_body_test_util.cu" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="7528" topLine="222" />
-		</Cursor>
-	</File>
-	<File name="n_body.cu" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1458" topLine="9" />
+			<Cursor1 position="2729" topLine="54" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
