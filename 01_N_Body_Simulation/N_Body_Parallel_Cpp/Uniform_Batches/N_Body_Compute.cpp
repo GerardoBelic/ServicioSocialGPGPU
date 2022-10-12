@@ -80,11 +80,6 @@ auto n_body_thread(unsigned begin, unsigned end, Particle_Set &particles, const 
 
         /// Sync again
         sync_point.wait();
-
-        {
-            std::string s;
-            std::cin >> s;
-        }
     }
 
     return;
@@ -95,18 +90,24 @@ auto n_body_computation_dispatcher(Particle_Set &particles, const Computation_In
 {
 
     /// Thread dispatch for updating particles speed
-	unsigned curr_index = 0;
 	unsigned step_index = particles.numParticles / info.numThreads;
+	unsigned remainder = particles.numParticles % info.numThreads;
 
 	/// Barrier for syncing all threads
 	boost::barrier sync_point{info.numThreads};
 
 	std::vector<std::jthread> threads;
 
-	for ( ; curr_index < (info.numThreads - 1) * step_index; curr_index += step_index)
-	{
-		threads.emplace_back(n_body_thread, curr_index, curr_index + step_index, std::ref(particles), std::cref(info), std::ref(sync_point));
-	}
-	threads.emplace_back(n_body_thread, curr_index, particles.numParticles, std::ref(particles), std::cref(info), std::ref(sync_point));
+	for (unsigned curr_index = 0; curr_index < particles.numParticles; curr_index += step_index)
+    {
+        if (remainder != 0)
+        {
+            threads.emplace_back(n_body_thread, curr_index, curr_index + step_index + 1, std::ref(particles), std::cref(info), std::ref(sync_point));
+            ++curr_index;
+            --remainder;
+        }
+        else
+            threads.emplace_back(n_body_thread, curr_index, curr_index + step_index, std::ref(particles), std::cref(info), std::ref(sync_point));
+    }
 
 }

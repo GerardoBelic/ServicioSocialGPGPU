@@ -28,7 +28,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="--particles=1024 --mass=1.0e9 --dt=1.0 --iterations=20000 --threads=12" />
+				<Option parameters="--particles=25600 --mass=1.0e9 --dt=1.0 --iterations=20 --threads=12" />
 				<Compiler>
 					<Add option="-O2" />
 					<Add option="-std=c++20" />

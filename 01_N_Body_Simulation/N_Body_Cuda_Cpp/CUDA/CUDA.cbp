@@ -13,7 +13,7 @@
 				<Option compiler="nvidia_nvcc_cuda_compiler" />
 				<Option parameters="--particles=25600 --mass=1e9 --dt=1.0 --iterations=20 --workgroup_size=128" />
 				<Compiler>
-					<Add option="-O3 -Xptxas -O3" />
+					<Add option="-O2 -Xptxas -O3" />
 					<Add option="-std=c++17" />
 					<Add directory="../../../dependencies/include" />
 					<Add directory="../../../dependencies/include/cuda" />
@@ -27,7 +27,7 @@
 				<Option compiler="nvidia_nvcc_cuda_compiler" />
 				<Option parameters="--particles=25600 --mass=1e9 --dt=1.0 --iterations=20 --workgroup_size=128" />
 				<Compiler>
-					<Add option="-O3 -Xptxas -O3" />
+					<Add option="-O2 -Xptxas -O3" />
 					<Add option="-std=c++17" />
 					<Add option="--use_fast_math" />
 					<Add directory="../../../dependencies/include" />
@@ -39,12 +39,12 @@
 				</Linker>
 			</Target>
 		</Build>
-		<Unit filename="n_body.cu" />
-		<Unit filename="n_body_upgraded.cu" />
-		<Unit filename="n_body_upgraded_2.cu">
+		<Unit filename="n_body.cu">
 			<Option compile="1" />
 			<Option link="1" />
 		</Unit>
+		<Unit filename="n_body_upgraded.cu" />
+		<Unit filename="n_body_upgraded_2.cu" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

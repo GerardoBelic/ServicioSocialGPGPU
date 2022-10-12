@@ -224,6 +224,9 @@ int main(int argc, char **argv)
     std::cout << "Compute elapsed time: " << "\n";
     std::cout << "\t" << duration_compute << " [us] (" << duration_compute/1e3 << " [ms]) (" << duration_compute/1e6 << " [s])" << "\n";
 
+    std::cout << "Average time per iteration: " << "\n";
+	std::cout << "\t" << duration_compute/numIterations << " [us] (" << duration_compute/1e3/numIterations << " [ms]) (" << duration_compute/1e6/numIterations << " [s])" << "\n";
+
 	std::cout << "Time to copy memory from device back to host: " << "\n";
     std::cout << "\t" << duration_device_host << " [us]" << "\n";
 

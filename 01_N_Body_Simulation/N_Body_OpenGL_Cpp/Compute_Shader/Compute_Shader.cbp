@@ -11,9 +11,9 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Compiler>
-					<Add option="-g" />
-				</Compiler>
+				<Linker>
+					<Add option="-O2" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/Compute_Shader" prefix_auto="1" extension_auto="1" />
@@ -41,11 +41,11 @@
 		<Unit filename="glad.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="n_body.cpp">
+		<Unit filename="n_body.cpp" />
+		<Unit filename="n_body_upgraded.cpp">
 			<Option compile="0" />
 			<Option link="0" />
 		</Unit>
-		<Unit filename="n_body_upgraded.cpp" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

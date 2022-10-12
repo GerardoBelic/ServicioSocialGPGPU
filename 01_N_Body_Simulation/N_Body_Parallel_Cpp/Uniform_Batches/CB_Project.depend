@@ -13829,8 +13829,9 @@
 1664243546 f:\repositorios\serviciosocialgpgpu\dependencies\include\glm\gtx\norm.inl
 	"../detail/qualifier.hpp"
 
-1664413995 source:f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_parallel_cpp\uniform_batches\n_body_compute.cpp
+1665557433 source:f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_parallel_cpp\uniform_batches\n_body_compute.cpp
 	"N_Body_Compute.hpp"
+	<iostream>
 	<thread>
 	<boost/thread/barrier.hpp>
 	<glm/glm.hpp>
@@ -13843,7 +13844,7 @@
 	"Particle_Set.hpp"
 	"Computation_Info.hpp"
 
-1664335625 f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_parallel_cpp\uniform_batches\particle_set.hpp
+1664854098 f:\repositorios\serviciosocialgpgpu\01_n_body_simulation\n_body_parallel_cpp\uniform_batches\particle_set.hpp
 	<vector>
 	<random>
 	<glm/glm.hpp>

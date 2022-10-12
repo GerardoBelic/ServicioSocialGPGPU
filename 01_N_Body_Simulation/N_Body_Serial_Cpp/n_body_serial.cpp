@@ -2,11 +2,13 @@
 #include <vector>
 #include <random>
 #include <cmath>
+#include <tuple>
+#include <chrono>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
 
-#include "CLI/CLI.hpp"
+#include <CLI/CLI.hpp>
 
 struct Particle_Set
 {
@@ -16,7 +18,7 @@ struct Particle_Set
 	All particles shares mass in this scenario
 	Positions are randomly selected with uniform distribution
     */
-    Particle_Set(unsigned int _numParticles, float _mass = 1.0f) : positions(_numParticles), velocities(_numParticles), numParticle_Set(_numParticles), mass(_mass)
+    Particle_Set(unsigned int _numParticles, float _mass = 1.0f) : positions(_numParticles), velocities(_numParticles), numParticles(_numParticles), mass(_mass)
     {
         for (auto& pos : positions)
         {
@@ -33,7 +35,7 @@ struct Particle_Set
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> velocities;
 
-    const unsigned int numParticle_Set;
+    const unsigned numParticles;
     const float mass;
 
 };
@@ -59,7 +61,7 @@ auto n_body_iteration(Particle_Set &particles, const float deltaTime) -> void
     /// Gravitational constant
     const float G = 6.6743e-11f;
 
-    /// Ciclo para calcular la nueva velocidad de cada particula calculando su vector de force y aceleración
+    /// Loop to calculate every particle new speed
     for (unsigned int i = 0; i < numParticles; ++i)
     {
 
@@ -100,7 +102,7 @@ auto n_body_iteration(Particle_Set &particles, const float deltaTime) -> void
 
 }
 
-auto parse_arguments(int argc, char **argv) -> Particle_Set
+auto parse_arguments(int argc, char **argv) -> std::tuple<Particle_Set, Computation_Info>
 {
 	
 	/// Parse arguments to form the particle set and the computation info
@@ -117,16 +119,20 @@ auto parse_arguments(int argc, char **argv) -> Particle_Set
 	app.add_option("--iterations", iterations, "Number of iterations of the simulation") -> required();
 
     //CLI11_PARSE(app, argc, argv);
-    app.parse(argc, argv);
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError &e) {
+        std::exit(app.exit(e));
+    }
 
     std::cout << "Particle count: " << numParticles << " particles" << "\n";
 	std::cout << "Particle mass: " << mass << " [kg]" << "\n";
 	std::cout << "Timestep: " << dt << " [s]" << "\n";
-	std::cout << "Iterations: " << iterations << " steps" << "\n";
+	std::cout << "Iterations: " << iterations << " steps" << "\n\n";
 
 	/// Form the particle set and the computation info
 	Particle_Set my_set{numParticles, mass};
-	Computation_Info info{dt, iterations}
+	Computation_Info info{dt, iterations};
 
 	return {my_set, info};
 	
@@ -139,7 +145,21 @@ int main(int argc, char **argv)
 	/// Instance of our particle set and parameters for solving the sim
 	auto [particle_set, computation_info] = parse_arguments(argc, argv);
 
+	/// Start measuring time
+	auto start = std::chrono::steady_clock::now();
+
     for (unsigned i = 0; i < computation_info.numIterations; ++i)
         n_body_iteration(particle_set, computation_info.timeStep);
+
+    /// Finish measuring time
+    auto finish = std::chrono::steady_clock::now();
+
+    double duration = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
+
+    std::cout << "Compute elapsed time: " << "\n";
+    std::cout << "\t" << duration / 1e3 << " [ms] (" << duration / 1e6 << " [s]) " << "\n";
+
+    std::cout << "Average time per iteration: " << "\n";
+    std::cout << "\t" << duration / computation_info.numIterations << " [us]" << "\n";
 
 }
