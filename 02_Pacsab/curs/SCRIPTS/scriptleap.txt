@@ -1,0 +1,3 @@
+prot=loadpdb struct.pdb
+savepdb prot leapoutput.pdb
+quit

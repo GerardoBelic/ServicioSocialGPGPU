@@ -1,0 +1,452 @@
+    1  sudo su
+    2  ls
+    3  julia
+    4  gentop
+    5  mkdir pacsab
+    6  mkdir julia
+    7  gentopcg
+    8  ls
+    9  exit
+   10  cd pacsab
+   11  ls
+   12  ls -a
+   13  cd 1AY7/
+   14  ls
+   15  gentop leapoutput.pdb 
+   16  gentop < leapoutput.pdb 
+   17  gentopcg < structure.pdb 
+   18  pacsab < dmdcg.dat 
+   19  LS
+   20  ls
+   21  cp ./1AY7_test/potentials.dat ./
+   22  ls
+   23  pacsab < dmdcg.dat 
+   24  julia
+   25  ls
+   26  exit
+   27  julia
+   28  ls
+   29  julia
+   30  cd julia/
+   31  ls
+   32  julia
+   33  ls
+   34  julia gentop.jl < leapoutput.pdb 
+   35  julia
+   36  julia gentop.jl < leapoutput.pdb 
+   37  julia
+   38  julia gentop.jl < leapoutput.pdb 
+   39  julia
+   40  julia gentop.jl < leapoutput.pdb 
+   41  top
+   42  netstat
+   43  clear
+   44  sudo su -
+   45  super su -
+   46  sudo su -
+   47  julia
+   48  clear
+   49  su
+   50  exit
+   51  /home/nct00/nct0002/bin
+   52  clear
+   53  module load gcc
+   54  f77
+   55  f77 --help
+   56  clear
+   57  cd Refactorizacion/curs/
+   58  clear
+   59  cd bin/
+   60  cd ..
+   61  ls
+   62  ls /test
+   63  ls test
+   64  clear
+   65  tree
+   66  clea
+   67  clear
+   68  bin/gentop < allatom.pdb
+   69  bin/gentopcg < structure.pdb 
+   70  bin/gentopcg.f < structure.pdb 
+   71  ff7 bin/gentopcg.f -o gentopcg
+   72  f77 bin/gentopcg.f -o gentopcg
+   73  f77 bin/gentop.f -o gentop
+   74  f77 bin/
+   75  clear
+   76  f77 bin/cgdmd.f - cgdmd
+   77  f77 bin/cgdmd.f -o cgdmd
+   78  f95 bin/cgdmd.f -cgdmd
+   79  f95 bin/cgdmd.f -o cgdmd
+   80  f95 bin/contacts.f 
+   81  f95 bin/toprep.f 
+   82  ls
+   83  ls bin/
+   84  f95 bin/toprep.f -o topref
+   85  ls bin/
+   86  ./topref 
+   87  clear
+   88  ./test.run
+   89  sudo test.run
+   90  sudo
+   91  sudo test.run
+   92  clear
+   93  sudo test.ru
+   94  sudo -i. sudo -s.
+   95  sudo -i
+   96  exit
+   97  cd Refactorizacion/
+   98  cd curs/
+   99  clear
+  100  sudo test.run
+  101  sudo su
+  102  sudo gedit /etc/sudoers
+  103  exit
+  104  sudo su
+  105  clear
+  106  cd Refactorizacion/curs/
+  107  clear
+  108  ls
+  109  sudo test.run
+  110  sudo ./test.run
+  111  t
+  112  clear
+  113  ls
+  114  test.run
+  115  ./test.run
+  116  sudo ./test.run
+  117  sudo su
+  118  clear
+  119  bin/cgdmd.f <dmdcg.dat 
+  120  julia
+  121  cd Translate/
+  122  ls
+  123  julia gentop.jl < leapoutput.pdb 
+  124  julia
+  125  julia gentop.jl < leapoutput.pdb 
+  126  gentop < leapoutput.pdb 
+  127  julia gentop.jl < leapoutput.pdb 
+  128  julia
+  129  julia gentop.jl < leapoutput.pdb 
+  130  julia
+  131  julia gentop.jl < leapoutput.pdb 
+  132  ls
+  133  cd Translate
+  134  ls
+  135  julia gentop.jl < leapoutput.pdb 
+  136  gentop leapoutput.pdb
+  137  gentop < }leapoutput.pdb
+  138  gentop < leapoutput.pdb
+  139  time gentop < leapoutput.pdb 
+  140  time gentopcg < structureJulia.pdb 
+  141  julia
+  142  exit
+  143  gentop
+  144  ls
+  145  cd pacsab
+  146  ls
+  147  cd 1AY7/
+  148  ls
+  149  gentop < leapoutput.pdb 
+  150  $PATH
+  151  f95 bin/toprep.f -o topref
+  152  f95
+  153  ls
+  154  cd 1AY7_test/
+  155  L
+  156  ls
+  157  cd ..
+  158  ls
+  159  cd ..
+  160  ls
+  161  f95 gentop.f95 
+  162  f95 gentop.f95 -o gentop 
+  163  f95 -free-line-length-none gentop.95 -o gentop 
+  164  f95 -ffree-line-length-none gentop.95 -o gentop 
+  165  ls
+  166  f95 -free-line-length-none gentop.95 -o gentop 
+  167  f95 -ffree-line-length-none gentop.95 -o gentop 
+  168  f95 -ffree-line-length-none  
+  169  f95 -ffree-line-length-none gentop.f95 -o gentop 
+  170  f77 -ffree-line-length-none gentop.f95 -o gentop 
+  171  f77 gentop.f95 -o gentop 
+  172  f95 bin/cgdmd.f -o cgdmd
+  173  cd
+  174  $PATH
+  175  f77 gentop.f -o gentop 
+  176  cd pacsab/
+  177  ls
+  178  f77 gentop.f -o gentop 
+  179  f77 -ffree-line-length-none gentop.f -o gentop 
+  180  f95 -ffree-line-length-none gentop.f -o gentop 
+  181  f77 -ffree-line-length-none gentop.f -o gentop 
+  182  f66 -ffree-line-length-none gentop.f -o gentop 
+  183  f77 -ffree-line-length-none gentop.f -o gentop 
+  184  f95 -ffree-line-length-none gentop.f95 -o gentop 
+  185  f95 -ffree-line-length-none gentopcg.f -o gentop 
+  186  f77 -ffree-line-length-none gentopcg.f -o gentop 
+  187  source .bashrc~
+  188  cd
+  189  source .bashrc~
+  190  source .bashrc
+  191  gentop
+  192  $PATH
+  193  nano .bashrc
+  194  source .bashrc
+  195  source /~.bashrc
+  196  source ~/.bashrc
+  197  gentop
+  198  gentopcg
+  199  cd pacsab/
+  200  ll
+  201  ls
+  202  ./gentop
+  203  gentop
+  204  sudo su
+  205  sudo su oscar
+  206  f95 -ffree-line-length-none gentopcg.f -o gentopcg 
+  207  f95 -ffree-line-length-none gentopcg.f95 -o gentopcg 
+  208  sudo su oscar
+  209  gentop
+  210  ls
+  211  cd 1AY7/
+  212  ls
+  213  gentop < leapoutput.pdb 
+  214  ls
+  215  time gentop < leapoutput.pdb 
+  216  time gentopcg < structure.pdb 
+  217  cd pacsab/
+  218  ls
+  219  julia gentocg.jl < structure.pdb 
+  220  julia
+  221  julia gentopcg.jl < structure.pdb 
+  222  julia
+  223  cd
+  224  ls
+  225  cd pacsab/
+  226  ls
+  227  julia gentopcg.jl < structure.pdb 
+  228  julia
+  229  ls
+  230  cd 
+  231  pwd
+  232  ls
+  233  nano bashrc
+  234  ls
+  235  ls -l
+  236  ls -la
+  237  nano .bashrc
+  238  source ~./bashrc
+  239  source ~/bashrc
+  240  source ~/.bashrc
+  241  julia
+  242  source ~/.bashrc
+  243  julia
+  244  pwd
+  245  cd 
+  246  cd julia/
+  247  ls
+  248  cd julia-1.7.3/
+  249  ls
+  250  cd bin
+  251  ./julia 
+  252  ls
+  253  julia
+  254  source ~/.bashrc
+  255  nano .bashrc 
+  256  $PATH
+  257  nano .bashrc 
+  258  source ~/.bashrc
+  259  $PATH
+  260  cd julia
+  261  cd julia-1.7.3/
+  262  cd bin
+  263  pwd
+  264  cd 
+  265  nano .bashrc 
+  266  source ~/.bashrc
+  267  $PATH
+  268  julia
+  269  source ~/.bashrc
+  270  gentop
+  271  julia
+  272  nano .bashrc
+  273  source ~/.bashrc
+  274  gentop
+  275  julia
+  276  source ~/.bashrc
+  277  julia
+  278  source ~/.bashrc}
+  279  source ~/.bashrc
+  280  julia
+  281  $PATH
+  282  exec bash
+  283  $PATH
+  284  julia
+  285  exec bash
+  286  $PATH
+  287  julia
+  288  Julia
+  289  cd pacsab
+  290  ls
+  291  Julia gentopcg.jl < structure.pdb 
+  292  cat structure.pdb 
+  293  gentop < ./1AY7/leapoutput.pdb 
+  294  ls
+  295  Julia gentopcg.jl < structure.pdb 
+  296  gfortran -ffree-line-length-0 -o gentopcg gentopcg.f94
+  297  gfortran -ffree-line-length-0 -o gentopcg gentopcg.f95
+  298  ./gentopcg < structure.pdb 
+  299  Julia gentopcg.jl < structure.pdb 
+  300  ./gentopcg < structure.pdb 
+  301  Julia gentopcg.jl < structure.pdb 
+  302  gfortran -ffree-line-length-0 -o gentopcg gentopcg.f95
+  303  ./gentopcg < structure.pdb 
+  304  Julia gentopcg.jl < structure.pdb 
+  305  cd pacsab/
+  306  ls
+  307  Julia gentopcg.jl < structure.pdb 
+  308  ./gentopcg < structure.pdb 
+  309  Julia gentopcg.jl < structure.pdb 
+  310  ./gentopcg < structure.pdb 
+  311  Julia gentopcg.jl < structure.pdb 
+  312  ./gentopcg < structure.pdb 
+  313  gentopcg < structure.pdb 
+  314  $PATH
+  315  julia
+  316  gentop
+  317  cd
+  318  $PATH
+  319  nano .bashrc
+  320  exec bash
+  321  gentop
+  322  cd pacsab/
+  323  ls
+  324  gentopcg < structure.pdb 
+  325  Julia gentopcg.jl < structure.pdb 
+  326  gentopcg < structure.pdb 
+  327  Julia gentopcg.jl < structure.pdb 
+  328  Julia gentopcg.jl < structure.pdb }
+  329  time gentopcg < structure.pdb 
+  330  Julia gentopcg.jl < structure.pdb }
+  331  time gentopcg < structure.pdb 
+  332  ls
+  333  Julia gentopcg.jl < structure.pdb }
+  334  Julia gentopcg.jl < structure.pdb
+  335  Julia gentopcg.jl < structure.pdb }
+  336  Julia gentopcg.jl < structure.pdb 
+  337  time gentopcg < structure.pdb 
+  338  Julia gentopcg.jl < structure.pdb 
+  339  clear
+  340  Julia gentopcg.jl < structure.pdb 
+  341  julia
+  342  julia
+  343  Julia gentopcg.jl < structure.pdb 
+  344  clear
+  345  Julia gentopcg.jl < structure.pdb 
+  346  clear
+  347  Julia gentopcg.jl < structure.pdb 
+  348  clear
+  349  Julia gentopcg.jl < structure.pdb 
+  350  ./gentopcg < structure.pdb 
+  351  Julia gentopcg.jl < structure.pdb 
+  352  ./gentopcg < structure.pdb 
+  353  Julia gentopcg.jl < structure.pdb 
+  354  Julia
+  355  ls
+  356  cd pacsab/
+  357  ls
+  358  cd cycle
+  359  ls
+  360  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  361  cyclon
+  362  ls
+  363  ./cylon
+  364  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  365  ./cylon
+  366  ./cylon < 1
+  367  ./cylon
+  368  ./cylon < 1
+  369  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  370  ./cylon < 1
+  371  ./cylon
+  372  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  373  ./cylon}
+  374  ./cylon
+  375  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  376  ./cylon < | cat "5"
+  377  ./cylon < cat "5"
+  378  cat "5"
+  379  ./cylon < echo "5"
+  380  echo "5"
+  381  ./cylon < echo "5"
+  382  cat 5
+  383  cat archivo < 5
+  384  file 5
+  385  ls
+  386  rm fort.1000 
+  387  ls
+  388  cat archivo < 5
+  389  cat 5
+  390  echo 5
+  391  cat < 5
+  392  cat hola.txt
+  393  gedit hola.txt
+  394  ./cylon < hola.txt
+  395  hola.txt
+  396  cat hola.txt 
+  397  ./cylon < hola.txt
+  398  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  399  ./cylon < hola.txt
+  400  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  401  ./cylon < hola.txt
+  402  ./cylon
+  403  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  404  ./cylon
+  405  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  406  ./cylon
+  407  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  408  ./cylon
+  409  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  410  ./cylon
+  411  gfortran -ffree-line-length-0 -o cylon cycle.f95 
+  412  ./cylon
+  413  gfortran -ffree-line-length-0 -o cylon2 cycle2.f95 
+  414  ./cylon2
+  415  gfortran -ffree-line-length-0 -o cylon2 cycle2.f95 
+  416  ./cylon2
+  417  gfortran -ffree-line-length-0 -o cylon2 cycle2.f95 
+  418  ./cylon2
+  419  ./cylon
+  420  ./cylon2
+  421  Julia
+  422  cd
+  423  Julia
+  424  cd pacsab
+  425  cd cycle
+  426  ./cylon
+  427  ./cylon < hola.txt
+  428  ./configure
+  429  make install
+  430  ./configure
+  431  make install
+  432  cd src
+  433  make install
+  434  sudo make install
+  435  vmd
+  436  gentopcg < structure.pdb
+  437  mnsh
+  438  ./mnsh
+  439  hostname
+  440  lscpu
+  441  vmd
+  442  ../../pacsab < dmdcg.dat
+  443  vmd
+  444  pacsab
+  445  pacsab < 1AY7/1AY7_test/dndcg.dat
+  446  pacsab < 1AY7/1AY7_test/dmdcg.dat
+  447  ../../pacsab < dmdcg.dat
+  448  cd..
+  449  cd ..
+  450  ../bin/cgdmd < dmdcg.dat
+  451  history
+  452  history > history.txt

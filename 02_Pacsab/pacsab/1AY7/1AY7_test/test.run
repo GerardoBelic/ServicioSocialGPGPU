@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+#SBATCH --job-name=test
+#SBATCH --ntasks=1
+#SBATCH --output=test_out_%j.out
+#SBATCH --partition=debug
+#SBATCH --workdir=.
+#SBATCH --time=00:05:00
+
+../bin/cgdmd < dmdcg.dat

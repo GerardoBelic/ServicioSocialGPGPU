@@ -1,0 +1,10 @@
+# depslib dependency file v1.0
+1667235689 source:c:\users\geraw\desktop\pacsab_refactor\refactor\cgdmd\main.cpp
+	<iostream>
+	<fstream>
+	<sstream>
+	<string>
+	<vector>
+	<array>
+	<cmath>
+

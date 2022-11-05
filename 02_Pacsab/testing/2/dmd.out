@@ -1,0 +1,197 @@
+&INPUT
+ TSNAP=  9.9999999999999998E-013,
+ TENE=  9.9999999999999998E-013,
+ TTERM=  0.0000000000000000     ,
+ TACT=  2.0000000000000000E-014,
+ SIGMA=  5.0000000745058060E-002,
+ TEMP=  300.00000000000000     ,
+ KKK=2857       ,
+ FILE7="topcg.dat                                                                                           ",
+ FILE9="structurecg.pdb                                                                                     ",
+ FILE10="res                                                                                                 ",
+ FILE12="energy.dat                                                                                          ",
+ FILE15="res                                                                                                 ",
+ FILE16="beads.dat                                                                                           ",
+ FILE17="potentials.dat                                                                                      ",
+ FILE19="output.pdb                                                                                          ",
+ FILE20="snapshots.pdb                                                                                       ",
+ FILE21="snapca.pdb                                                                                          ",
+ NBLOC=10000      ,
+ RCUTGO=  8.0000000000000000     ,
+ TMIN=  1.0000000000000001E-030,
+ DCUT=  10.000000000000000     ,
+ EGO=  0.0000000000000000     ,
+ ISOLV=1          ,
+ FPOT=  0.0000000000000000     ,
+ EHB=  3.0000000000000000     ,
+ EHBC=  4.0000000000000000     ,
+ IDAB=0          ,
+ IGOAB=0          ,
+ IRIG=0          ,
+ RSHAKE=  50.000000000000000     ,
+ RPOT=  50.000000000000000     ,
+ BETA=  0.0000000000000000     ,
+ EBOND=  1000.0000000000000     ,
+ DSTEP=  1.0000000000000000E-004,
+ DIJMIN=  1.0000000000000000E-004,
+ ISEC=0          ,
+ TPUSH=  5.0000000000000001E-004,
+ ITERM=1          ,
+ FACTM=  1.0000000000000000     ,
+ IHBR=0          ,
+ FVDW=  8.0000000000000000     ,
+ FSOLV=  12.000000000000000     ,
+ EPS=  16.500000000000000     ,
+ RBOX=  300.00000000000000     ,
+ IWR=0          ,
+ FTERM=  4.0000000000000000     ,
+ FACTHC= 0.80000001192092896     ,
+ FACTR= 0.89999997615814209     ,
+ ICONS=1          ,
+ IPRINT=1          ,
+ RSOLV=  3.5000000000000000     ,
+ ASOLV=  10.000000000000000     ,
+ BSOLV= 0.50000000000000000     ,
+ DWAT=  6.0000000000000000     ,
+ /
+ HBOND O    GLY             4 H    LEU            91
+ HBOND O    GLU            14 H    THR            18
+ HBOND O    ALA            15 H    LEU            19
+ HBOND O    THR            16 H    ASN            20
+ HBOND O    ASP            17 H    LEU            21
+ HBOND O    THR            18 H    ILE            22
+ HBOND O    LEU            19 H    ALA            23
+ HBOND O    ASN            20 H    SER            24
+ HBOND O    LEU            21 H    GLY            26
+ HBOND O    VAL            35 H    GLU            54
+ HBOND O    HIE            53 H    THR            72
+ HBOND O    TYR            55 H    ILE            70
+ HBOND O    THR            67 H    HIE            85
+ HBOND O    ARG            69 H    THR            82
+ HBOND O    ILE            71 H    TYR            80
+ HBOND O    ASP            79 H    ILE            92
+ HBOND O    TYR            81 H    SER            90
+ HBOND O    LYS            97 H    VAL           146
+ HBOND O    ALA            99 H    GLU           148
+ HBOND O    ILE           101 H    ARG           150
+ HBOND O    SER           108 H    LEU           112
+ HBOND O    ILE           109 H    HIE           113
+ HBOND O    SER           110 H    GLN           114
+ HBOND O    ASP           111 H    THR           115
+ HBOND O    HIE           113 H    LYS           117
+ HBOND O    GLN           114 H    LYS           118
+ HBOND O    THR           115 H    GLU           119
+ HBOND O    LEU           116 H    LEU           120
+ HBOND O    LYS           117 H    LEU           122
+ HBOND O    ASN           129 H    LEU           133
+ HBOND O    LEU           130 H    TRP           134
+ HBOND O    ASP           131 H    ASP           135
+ HBOND O    ALA           132 H    CYS           136
+ HBOND O    LEU           133 H    LEU           137
+ HBOND O    TRP           134 H    THR           138
+ HBOND O    CYS           136 H    TRP           140
+ HBOND O    LEU           145 H    THR           181
+ HBOND O    LEU           147 H    ILE           183
+ HBOND O    TRP           149 H    SER           185
+ HBOND O    GLN           151 H    SER           155
+ HBOND O    PHE           152 H    LYS           156
+ HBOND O    GLU           153 H    GLN           157
+ HBOND O    SER           155 H    THR           159
+ HBOND O    ASN           161 H    SER           165
+ HBOND O    GLY           162 H    VAL           166
+ HBOND O    ALA           163 H    LEU           167
+ HBOND O    GLU           164 H    GLN           168
+ HBOND O    SER           165 H    VAL           169
+ HBOND O    VAL           166 H    PHE           170
+ HBOND O    LEU           167 H    ARG           171
+ HBOND O    GLN           168 H    GLU           172
+ HBOND O    VAL           169 H    ALA           173
+ HBOND O    PHE           170 H    LYS           174
+ HBOND O    ARG           171 H    ALA           175
+ HBOND O    GLU           172 H    GLU           176
+ HBOND O    ALA           173 H    CYS           178
+ HBOND H    ASP             1 O    VAL            43
+ HBOND H    VAL             6 O    LEU            91
+ HBOND H    LEU             8 O    ASP            93
+ HBOND H    SER             9 O    CYS            96
+ HBOND H    GLY            34 O    GLU            54
+ HBOND H    HIE            53 O    THR            72
+ HBOND H    TYR            55 O    ILE            70
+ HBOND H    VAL            57 O    ARG            68
+ HBOND H    ARG            69 O    THR            82
+ HBOND H    ILE            71 O    TYR            80
+ HBOND H    GLY            73 O    GLU            78
+ HBOND H    TYR            81 O    SER            90
+ HBOND H    ALA            99 O    VAL           146
+ HBOND H    ILE           101 O    GLU           148
+ HBOND H    GLY           103 O    ARG           150
+ HBOND H    LEU           145 O    ASP           179
+ HBOND H    LEU           147 O    THR           181
+ HBOND H    TRP           149 O    ILE           183
+ HBOND H    PHE           152 O    SER           185
+&INPUT
+ TSNAP=  9.9999999999999998E-013,
+ TENE=  9.9999999999999998E-013,
+ TTERM=  0.0000000000000000     ,
+ TACT=  2.0000000000000000E-014,
+ SIGMA=  5.0000000745058060E-002,
+ TEMP=  300.00000000000000     ,
+ KKK=2857       ,
+ FILE7="topcg.dat                                                                                           ",
+ FILE9="structurecg.pdb                                                                                     ",
+ FILE10="res                                                                                                 ",
+ FILE12="energy.dat                                                                                          ",
+ FILE15="res                                                                                                 ",
+ FILE16="beads.dat                                                                                           ",
+ FILE17="potentials.dat                                                                                      ",
+ FILE19="output.pdb                                                                                          ",
+ FILE20="snapshots.pdb                                                                                       ",
+ FILE21="snapca.pdb                                                                                          ",
+ NBLOC=10000      ,
+ RCUTGO=  8.0000000000000000     ,
+ TMIN=  1.0000000000000001E-030,
+ DCUT=  10.000000000000000     ,
+ EGO=  0.0000000000000000     ,
+ ISOLV=1          ,
+ FPOT=  0.0000000000000000     ,
+ EHB=  3.0000000000000000     ,
+ EHBC=  4.0000000000000000     ,
+ IDAB=0          ,
+ IGOAB=0          ,
+ IRIG=0          ,
+ RSHAKE=  50.000000000000000     ,
+ RPOT=  50.000000000000000     ,
+ BETA=  0.0000000000000000     ,
+ EBOND=  1000.0000000000000     ,
+ DSTEP=  1.0000000000000000E-004,
+ DIJMIN=  1.0000000000000000E-004,
+ ISEC=0          ,
+ TPUSH=  5.0000000000000001E-004,
+ ITERM=1          ,
+ FACTM=  1.0000000000000000     ,
+ IHBR=0          ,
+ FVDW=  8.0000000000000000     ,
+ FSOLV=  12.000000000000000     ,
+ EPS=  16.500000000000000     ,
+ RBOX=  300.00000000000000     ,
+ IWR=0          ,
+ FTERM=  4.0000000000000000     ,
+ FACTHC= 0.80000001192092896     ,
+ FACTR= 0.89999997615814209     ,
+ ICONS=1          ,
+ IPRINT=1          ,
+ RSOLV=  3.5000000000000000     ,
+ ASOLV=  10.000000000000000     ,
+ BSOLV= 0.50000000000000000     ,
+ DWAT=  6.0000000000000000     ,
+ /
+&DISTANCIES
+ ROHMIN=  1.7500000000000000     ,
+ ROHMAX=  2.5000000000000000     ,
+ RNOMIN=  2.7500000000000000     ,
+ RNOMAX=  3.5000000000000000     ,
+ RCHMIN=  2.9000000953674316     ,
+ RCHMAX=  3.7500000000000000     ,
+ /
+ natom,nres,tsnap,nbloc        1138         185   9.9999999999999998E-013       10000
+ epot,ekin,nhb   525.44015157926481        1017.1045645081833        1542.5447160874483               75
