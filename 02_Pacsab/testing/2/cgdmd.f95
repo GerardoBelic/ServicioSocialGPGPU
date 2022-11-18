@@ -37,6 +37,7 @@
 	common/fisic/evdw(natmax),rvdw(natmax),qq(natmax),gfree(natmax),vol(natmax)
 	common/param/fvdw,fsolv,eps,xlamb
 	common/parmsolv/rsolv,asolv,bsolv,dwat,icont(natmax),fcont(natmax)
+	common/random_c/pseudo
 
 	dimension qa(natmax,natp),gfreea(natmax,natp),va(natmax,natp)
 	dimension evdwa(natmax,natp),rvdwa(natmax,natp),rhca(natmax,natp),xma(natmax,natp)
@@ -55,6 +56,8 @@
  334	FORMAT('ENDMDL')
  1015	FORMAT(E12.6,20(1X,F7.2))
 
+
+	pseudo = 0.0
 
 !C default values
 	file9='nativain.pdb'
@@ -173,11 +176,7 @@
 !C	kk=kk+ind1(n-1)
 !C	im=im+1
 !C	endif
-	if(k.lt.ind1(n-1)) then
-	print *,k
-	print *,n
-	kk=kk+ind1(n-1)
-	endif
+	if(k.lt.ind1(n-1))kk=kk+ind1(n-1)
 	if(cad(n).ne.cad(n-1))im=im+1
 	ind2(n)=k+kk
 	imol(n)=im
@@ -186,7 +185,10 @@
 	r(n,2)=y
 	r(n,3)=z
 	if(atom(n).eq.'N')in(k1)=n
-	if(atom(n).eq.'H')ih(k1)=n
+	if(atom(n).eq.'H')then
+	ih(k1)=n
+	!write(6,*)'H in ',k1,' equals ', n
+	endif
 	if(atom(n).eq.'CA')ica(k1)=n
 	if(atom(n).eq.'C')ico(k1)=n
 	if(atom(n).eq.'O')io(k1)=n
@@ -195,11 +197,27 @@
  51	natom=n-1
 	close(9)
 	nres=ind2(natom)
-
+	!write(6,*)'nres ',nres
+	
 	if(natom.gt.natmax)then
 	write(6,*)'El numero de particules supera el limit maxim de ',natmax
 	stop
 	endif
+	
+	!Debug
+		
+		!do i=1,natom
+		
+			!write(*,*)'atom(',i,')=', atom(i)
+			!write(*,*)'res(',i,')=', res(i)
+			!write(*,*)'cad(',i,')=', cad(i)
+			!write(*,*)'ind1(',i,')=', ind1(i)
+		
+		!enddo
+		
+		!read(*,*)klm
+		
+	!End Debug
 
 !Cccccccccccccccccccccccccccccccccccccccccccccccc
 !C assigna un tipus a cada atom
@@ -229,6 +247,19 @@
 	if(atom(i).eq.'C')atp(i,1)='co'
 	if(atom(i).eq.'O'.or.atom(i).eq.'OXT')atp(i,1)='oc'
 	enddo
+	
+	!Debug
+		
+		do i=1,natom
+		
+			!write(*,*)nat(i)
+			!write(*,*)'atp(',i,',0)=', atp(i,1)			
+		
+		enddo
+		
+		!read(*,*)klm
+		
+	!End Debug
 
 !Cccccccccccccccccccccccccccccccccccccccccccccccc
 !C carrega els parametres de cada tipus d'atom
@@ -293,6 +324,8 @@
 	v(i,2)=0.
 	v(i,3)=0.
 	enddo
+	
+	!write(6,*)'masa: ',xmassa
 
 !Ccccccccccccccccccccccccccccccccccccccc
 !C llegeix la matriu de topologia
@@ -438,6 +471,7 @@
 
 
 	call potencial(natom)
+	!read(5,*)xddd
 
 !C llista de solapaments plausibles
 	do i=1,natom-1
@@ -466,6 +500,10 @@
 	enddo
 	enddo
 
+!Debug
+	!write(6,*)rshake2, rpot2
+	!read(5,*)xdddd
+!end debug
 
 	if(isolv.ne.0)call enchufa(natom,dcut)
 
@@ -488,8 +526,6 @@
 	enddo
 	enddo
 
-
-
 !C suma l'energia potencial de la conformacio inicial
 	epot0=0.
 	epotmol0=0.
@@ -504,30 +540,47 @@
 	dist=sqrt(rmod2)
 	if(inter(i,j).eq.1)then
 	  k=nstep(i,j)
+		!write(6,fmt="(i0,1x)",advance="no")k
+		!write(6,fmt="(f8.3,1x)",advance="no")dist
+		!write(6,fmt="(f8.3,1x)",advance="no")estep(i,j,k)
 	  do while(dist.lt.rstep(i,j,k).and.k.gt.0)
 	  epot0=epot0-estep(i,j,k)
-	  if(imol(i).ne.imol(j))epotmol0=epotmol0-estep(i,j,k)
+		!write(6,fmt="(f8.3,1x)",advance="no")epot0
+	  if(imol(i).ne.imol(j)) then
+	  epotmol0=epotmol0-estep(i,j,k)
+		!write(6,fmt="(f8.3,1x)",advance="no")epotmol0
+	  endif
 	  if(istruct(i,j).eq.1)then
 	  epothb0=epothb0-estep(i,j,k)
-	  if(imol(i).ne.imol(j))epothbmol0=epothbmol0-estep(i,j,k)
+		!write(6,fmt="(f8.3,1x)",advance="no")epothb0
+	  if(imol(i).ne.imol(j)) then
+	  epothbmol0=epothbmol0-estep(i,j,k)
+		!write(6,fmt="(f8.3,1x)",advance="no")epothbmol0
+	  endif
 	  endif
 	  k=k-1
 	  enddo
+	  !write(6,*)' '
 	endif
 	enddo
 	enddo
-
+!read(5,*)xddd
 
 !C assigna velocitats aleatories
 	do j=1,3
 	vcm(j)=0.
 	do i=1,natom
-	call random_number(fi)
+	call random_number_new(fi)
 	v(i,j)=fi
 	vcm(j)=vcm(j)+xm(i)*v(i,j)
 	enddo
 	vcm(j)=vcm(j)/xmassa
 	enddo
+	
+	!debug
+	!write(6,*)vcm(1),vcm(2),vcm(3)
+	!read(5,*)xddd
+	!end debug
 
 !C ajusta l'energia cinetica a la temperatura requerida
 	ekin=0.
@@ -548,6 +601,11 @@
 	ekin0=ekin0/facte
 
 	etot0=epot0+ekin0
+	
+	!debug
+	!write(6,*)ekin,sto,ekin0,etot0
+	!read(5,*)xddd
+	!end debug
 
 !C ara busca el CM
 	do j=1,3
@@ -557,6 +615,11 @@
 	enddo
         rcm(j)=rcm(j)/xmassa
 	enddo
+	
+	!debug
+		!write(6,*)rcm(1),rcm(2),rcm(3)
+		!read(5,*)xddd
+	!end debug
 
 	ibloc=0
 
@@ -624,9 +687,15 @@
 
 
 	icrash=0
+	
+	!Debug all vars
+	
+	
+	
+	!end debug
 
 	do 200 ibloc=1,nbloc
-
+	
 	tacum=0.
 
 	icg=0
@@ -993,7 +1062,7 @@
 
 !C termostat Andersen
 !C selecciona una particula que termalitzar
-	call random_number(fi)
+	call random_number_new(fi)
 	i=int(natom*fi)+1
 
 	do j=1,3
@@ -1045,6 +1114,8 @@
 !C suma l'energia potencial de la conformacio inicial
 	epothb=0.
 	epot=0.
+	!epotmol=0.
+	!epothbmol=0.
 	do i=1,natom-1
 	do j=i+1,natom
 	rij1=dbox(j,i,1)
@@ -1565,10 +1636,25 @@
 
 	enddo
 	
+	! Debug
+	
+	!do i=1,natom
+		!write(6,*)'icont ',i,' ',icont(i)
+	!enddo
+	
+	!write(6,*)rsolv2, rbox, rbox2
+	
+	! End debug
+	
 	do i=1,natom
 	fcont(i)=1./(1.+exp((icont(i)-asolv)/bsolv))
 	enddo
-	
+	!Debug
+		!do i=1,natom
+		!write(6,*)fcont(i)
+		!enddo
+	!read(5,*)xdddd
+	 !end debug
 	do i=1,natom-1
 	ii=ind2(i)
 	do j=i+1,natom
@@ -1590,10 +1676,25 @@
 	   estep(i,j,1)=-eij
 	   estep(i,j,2)=-eij
 	 endif
+	 !Debug
+		!write(6,fmt="(f16.8,1x)",advance="yes")estep(i,j,1)
+		!read(5,*)xdddd
+	 !end debug
 	endif
 	endif
 	enddo
 	enddo
+	
+	!Debug
+	!do i=1,10
+	!	write(6,fmt="(i0,1x)",advance="no")i
+	!	do j=1,natom
+	!		write(6, fmt="(f8.3,1x)", advance="no")estep(i,j,2)
+	!	enddo
+	!	write(6,*)' '
+	!enddo
+	!end debug
+	
 	return
 	end
 
@@ -1821,6 +1922,19 @@
 	endif
 	dbox=r12
 	end
+	
+	subroutine random_number_new(ra)
+	implicit real*8(a-h)
+	implicit real*8(o-z)
+	common/random_c/pseudo
+	
+		pseudo = pseudo + 0.05
+		
+		if(pseudo > 0.99)pseudo = 0.05
+		
+		ra = pseudo
+	
+	end subroutine random_number_new
 
       subroutine rnd_gauss ( fi, xm, T)
 	implicit real*8(a-h)
@@ -1828,7 +1942,8 @@
 	R=8.314
         std_dev = sqrt((T*R) / xm)
         pi = 4.0d0 * atan ( 1.0d0 )
-        call random_number ( rnd1 )
-        call random_number ( rnd2 )
+        call random_number_new ( rnd1 )
+        call random_number_new ( rnd2 )
+		
         fi = std_dev * sqrt ( -2.0d0 * log ( rnd1 ) ) * cos ( 2.0d0 * pi * rnd2 )
       end subroutine rnd_gauss
