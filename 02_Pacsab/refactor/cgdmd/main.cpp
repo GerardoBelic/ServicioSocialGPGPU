@@ -1,3 +1,7 @@
+/**
+TODO: check why v[][] is changing its values, probably changing because of the functions chgmomene, chgmom
+*/
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -175,27 +179,28 @@ struct Xoc
 
     std::vector<std::array<double, 3>> r;   /// Value. Size of natom x 3. Holds the coordinates of each atom
     std::vector<std::array<double, 3>> v;   /// Value. Size of natom x 3. Holds the velocity of each atom
-    std::vector<double> xm; ///Value. Size of natom ....
-    double rbox;
+    std::vector<double> xm; ///Value. Size of natom. Hold a type of atom energy
+    double rbox;    ///Value. A constant specified in the input
     int ierr; /// Apparently unused
 };
 
+/// Note: inspect if the ranges are natom x natom or nres x rnes
 struct Pous
 {
     Pous(int natom) : rstep(natom, std::vector<std::array<double, 2>>(natom)), estep(natom, std::vector<std::array<double, 2>>(natom)) { }
 
-    std::vector<std::vector<std::array<double, 2>>> rstep;
-    std::vector<std::vector<std::array<double, 2>>> estep;
+    std::vector<std::vector<std::array<double, 2>>> rstep;  ///Value. Size of natom x natom x 2. Holds the min-max ranges of a energy
+    std::vector<std::vector<std::array<double, 2>>> estep;  ///Value. Size of natom x natom x 2. Holds the min-max ranges of a energy
 };
 
 /// Note: even if the sizes of this class members are nres x nres, some parts of the program ask for values in the range natom x natom
 struct Intr
 {
-    Intr(int natom) : nstep(natom, std::vector<int>(natom)), istruct(natom, std::vector<int>(natom)), inter(natom, std::vector<int>(natom)) { }
+    Intr(int natom) : nstep(natom, std::vector<int>(natom, -1)), istruct(natom, std::vector<int>(natom)), inter(natom, std::vector<int>(natom)) { }
 
-    std::vector<std::vector<int>> nstep;    /// Size. Size of nres x nres (???). Each element can have the values of 0 or 2;
+    std::vector<std::vector<int>> nstep;    /// Index. Size of nres x nres (???). Each element can have the values of -1, 0 or 1;
                                             /// goes hand in hand with pous.rstep and pous.estep, and the value indicates if we use the pair of values of rstep/estep
-                                            /// to be used to sum some energies (value=2) or not use any values to sum (value=0)
+                                            /// to be used to sum some energies (value=1) or not use any values to sum (value=-1)
     std::vector<std::vector<int>> istruct;  /// Boolean. Size of nres x nres. Represents if a pair of atoms i,j form a hydrogen bond or not
     std::vector<std::vector<int>> inter;    /// Boolean. Size of nres x nres. Represents if a pair of atoms i,j potencials are defined (???)
 };
@@ -204,11 +209,12 @@ struct Cov
 {
     Cov(int natom, int npairmax) : icov(natom, std::vector<int>(natom)), rbound(npairmax), ibound(npairmax), rhc(natom) { }
 
-    std::vector<std::vector<int>> icov;
-    std::vector<double> rbound;
-    std::vector<std::array<int, 2>> ibound;
-    std::vector<double> rhc;
-    double sigma;
+    std::vector<std::vector<int>> icov; /// Boolean. Size of natom x natom. This values can only be fill with the topology file (file7), in other case they are zero
+    std::vector<double> rbound; ///Value. Size of npairs (number of pairs in file7). Holds the distances between some atoms in the cov.ibound list of pairs
+    std::vector<std::array<int, 2>> ibound; /// Indices. Size of npairs (number of pairs in file7). Each element holds two indexes refering to atoms,
+                                            /// and it shares indices with cov.rbound, so a pair of indices in ibound[i] have a distance of rbound[i]
+    std::vector<double> rhc;    ///Value. Size of natom. Holds a value of a energy or the sum of the energies in an amino group
+    double sigma;   ///Value. A constant specified in the input
 };
 
 struct Pdb
@@ -218,9 +224,10 @@ struct Pdb
     std::vector<std::string> atom;  /// Atom name of each atom
     std::vector<std::string> res;   /// Residue name of each atom
     std::vector<int> ind2;  /// Index. Size of natom. Holds the residue index of each atom.
-    std::vector<int> nat;   /// Number of amino groups in an atom. Each atom is specified as an atom or as a amino group, thus the number.
-                            /// The values tipically aren't very large, maybe less than 10 or 15
-    std::vector<int> imol;
+    std::vector<int> nat;   /// Size. Size of natom. Number of amino groups in an atom. Each atom is specified as an atom or as a amino group, thus the number;
+                            /// the values tipically aren't very large, maybe less than 10
+    std::vector<int> imol;  /// Index. Size of natom. Holds the atom's index of what molecule/chain it belongs;
+                            /// since there are not that many molecules in a file, its type value can be small
 };
 
 struct Atpres
@@ -301,25 +308,28 @@ struct Other
                                  ipart(natom), ibeta(natom), ind1(natom),
                                  inb1(natom), inb2(natom),
                                  nblist1(natom, std::vector<int>(natom)), nblist2(natom, std::vector<int>(natom)),
-                                 ireg(natom, std::vector<int>(natom)),
+                                 ireg(natom, std::vector<int>(natom, -1)),
                                  timp(natom, std::vector<double>(natom)),
                                  cad(natom),
                                  atp(natom, std::vector<std::string>(natp))
                                  { }
 
-    std::vector<std::vector<double>> qa, gfreea, va;
-    std::vector<std::vector<double>> evdwa, rvdwa, rhca, xma;
-    std::vector<std::array<double, 3>> rant;
-    std::vector<double> tpart;
-    std::vector<int> ipart, ibeta, ind1;
-    std::array<double, 3> rcm, vcm, vd, vm1, vm2;
-    std::vector<int> inb1, inb2;
-    std::vector<std::vector<int>> nblist1, nblist2;
-    std::vector<std::vector<int>> ireg;
-    std::vector<std::vector<double>> timp;
-    //std::array<double. 20> v1, v2;
-    std::vector<std::string> cad;
-    std::vector<std::vector<std::string>> atp;  /// Value. Size of natom x pdb.nat. Holds every amino group name contained in an atom;
+    std::vector<std::vector<double>> qa, gfreea, va, evdwa, rvdwa, rhca, xma;   /// Value. Size of natom x size of nat[i]. Holds several energy quantities per amino group
+                                                                                /// (1 value if the atom is not an amino (H, C, O, N, ...) or greater than 1 if its an amino group)
+    std::vector<std::array<double, 3>> rant;    /// Value. Size of natom x 3. Used to store the values of xoc.r with or withour some modifications
+    std::vector<double> tpart;  /// Unused
+    std::vector<int> ipart, ibeta;  /// Unused
+    std::vector<int> ind1;  /// Index. Size of natom. Holds the residue sequence number (relative) to each atom; in comparison pdb.ind2 holds the absolute residue sequence number
+    std::array<double, 3> rcm, vcm; /// Holds the sum of some velocities and coordinates of all atoms in each of its 3 dimensions
+    std::array<double, 3> vd, vm1, vm2; /// Unused
+    std::vector<int> inb1, inb2;    /// Unused
+    std::vector<std::vector<int>> nblist1, nblist2; /// Unused
+    std::vector<std::vector<int>> ireg; /// Size/Index. Size of natom x natom (but maybe just size of nres x nres). Holds the values [0-3] and goes hand in hand with intr.nstep;
+                                        /// several conditionals will pass if the value in ireg[][] is less or equal to nstep[][], thus the small range of values
+    std::vector<std::vector<double>> timp;  /// Unused
+    std::array<double, 20> v1, v2;    /// Unused
+    std::vector<std::string> cad;   /// Value. Size of natom. Holds the molecule/chain of every atom
+    std::vector<std::vector<std::string>> atp;  /// Value. Size of natom x pdb.nat[]. Holds every amino group name contained in an atom;
                                                 /// the second dimension can hold elements with no string due to some atoms being only one atom (H, C, Ca, N, ...)
 
 };
@@ -475,11 +485,11 @@ auto potencial(int natom, Xoc &xoc, Pous &pous, Intr &intr, Cov &cov, Pdb &pdb, 
             {
                 if (intr.istruct[i][j] == 0)
                 {
-                    double rvdwij = fisic.rvdw[i] + fisic.rvdw[j];
-                    double sto = std::pow(2.0 / (std::pow(pdb.nat[i], 0.33) + std::pow(pdb.nat[j], 0.33)), 6.0);
-                    double potvdw = std::sqrt(fisic.evdw[i] * fisic.evdw[j]) * sto * (sto - 2.0);
-                    double potlk = -0.09 / param.xlamb * (fisic.gfree[i] * fisic.vol[j] + fisic.gfree[j] * fisic.vol[i]) / (rvdwij * rvdwij * std::exp(std::pow(rvdwij / param.xlamb, 2.0)));
-                    double eij = param.fvdw * potvdw + param.fsolv * potlk * parmsolv.fcont[i] * parmsolv.fcont[j] + param.eps * fisic.qq[i] * fisic.qq[j] / rvdwij;
+                    double rvdwij = fisic.rvdw[i] + fisic.rvdw[j];//if (i == 1000-1)std::cout << boost::format("%12.6f") % rvdwij << std::endl;
+                    double sto = std::pow(2.0 / (std::pow(pdb.nat[i], 0.33) + std::pow(pdb.nat[j], 0.33)), 6.0);//if (i == 1000-1)std::cout << boost::format("%12.6f") % sto << std::endl;
+                    double potvdw = std::sqrt(fisic.evdw[i] * fisic.evdw[j]) * sto * (sto - 2.0);//if (i == 1000-1)std::cout << boost::format("%12.6f") % potvdw << std::endl;
+                    double potlk = -0.09 / param.xlamb * (fisic.gfree[i] * fisic.vol[j] + fisic.gfree[j] * fisic.vol[i]) / (rvdwij * rvdwij * std::exp(std::pow(rvdwij / param.xlamb, 2.0)));//if (i == 1000-1)std::cout << boost::format("%12.6f") % potlk << std::endl;
+                    double eij = param.fvdw * potvdw + param.fsolv * potlk * parmsolv.fcont[i] * parmsolv.fcont[j] + param.eps * fisic.qq[i] * fisic.qq[j] / rvdwij;//if (i == 1134-1)std::cout << boost::format("%14.8f") % eij << std::endl;
 
                     intr.nstep[i][j] = 2 - OFFSET; //Originaly was 2, but it is an index so I decremented it
                     pous.rstep[i][j][0] = 0.9 * rvdwij;
@@ -510,7 +520,7 @@ auto enchufa(int natom, double dcut, Xoc &xoc, Intr &intr, Cov &cov, Atpres &atp
     double dcut2 = dcut * dcut;
 
     for (int i = 0; i < natom - 1; ++i)
-    {
+    {//std::cout << i+1 << " ";
         for (int l = 0; l < npt.ipot[i]; ++l)
         {
             int j = npt.npot[i][l];
@@ -521,21 +531,21 @@ auto enchufa(int natom, double dcut, Xoc &xoc, Intr &intr, Cov &cov, Atpres &atp
                 double rij2 = dbox(i, j, 1, xoc);
                 double rij3 = dbox(i, j, 2, xoc);
 
-                double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;
+                double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;//std::cout << rmod2 << " ";
 
                 if (rmod2 < dcut2)
-                    intr.inter[i][j] = 1;
+                    intr.inter[i][j] = 1;//std::cout << j+1 << " ";}
             }
-        }
+        }//std::cout << std::endl;
     }
 
     int nres = pdb.ind2[natom - 1] + OFFSET;
-
+//std::cout << "inicio\n";
     for (int i = 0; i < nres - 1; ++i)
     {
         int n1 = atpres.in[i];
         int n2 = atpres.in[i + 1];
-
+//std::cout << n1 << " " << n2 << std::endl;
         intr.inter[n1][n2] = 0;
     }
 
@@ -543,7 +553,7 @@ auto enchufa(int natom, double dcut, Xoc &xoc, Intr &intr, Cov &cov, Atpres &atp
     {
         int n1 = atpres.ico[i - 1];
         int n2 = atpres.ico[i];
-
+//std::cout << n1 << " " << n2 << std::endl;
         intr.inter[n1][n2] = 0;
     }
 
@@ -551,12 +561,13 @@ auto enchufa(int natom, double dcut, Xoc &xoc, Intr &intr, Cov &cov, Atpres &atp
 
 }
 
+/// Creates an hydrogen bond/bridge between two residues
 auto creapouhb(int n1, int n2, double rmin, double r0, double r1, double rmax, double ehb, Pous &pous, Intr &intr) -> void
 {
 
     intr.inter[n1][n2] = 1;
     intr.istruct[n1][n2] = 1;
-    intr.nstep[n1][n2] = 2;
+    intr.nstep[n1][n2] = 2 - OFFSET;
 
     pous.rstep[n1][n2][0] = rmin;
     pous.rstep[n1][n2][1] = rmax;
@@ -587,13 +598,13 @@ auto chgmom(int mem1, int mem2, double rij1, double rij2, double rij3, Xoc &xoc)
     double dp = vdmod / xsum;
 
     xoc.v[mem1][0] += dp / xoc.xm[mem1] * rij1;
-    xoc.v[mem2][0] -= dp / xoc.xm[mem2] * rij1;
+    xoc.v[mem2][0] += -dp / xoc.xm[mem2] * rij1;
 
     xoc.v[mem1][1] += dp / xoc.xm[mem1] * rij2;
-    xoc.v[mem2][1] -= dp / xoc.xm[mem2] * rij2;
+    xoc.v[mem2][1] += -dp / xoc.xm[mem2] * rij2;
 
     xoc.v[mem1][2] += dp / xoc.xm[mem1] * rij3;
-    xoc.v[mem2][2] -= dp / xoc.xm[mem2] * rij3;
+    xoc.v[mem2][2] += -dp / xoc.xm[mem2] * rij3;
 
     return;
 
@@ -736,7 +747,7 @@ auto rnd_gauss(double &fi, double xm, double T) -> void
     double R = 8.314;
 
     double std_dev = std::sqrt((T * R) / xm);
-    double pi = 3.14159265359;
+    double pi = 4.0 * std::atan(1.0);
 
     double rnd1 = getUniformRandom();
     double rnd2 = getUniformRandom();
@@ -836,6 +847,21 @@ auto get_molecule_info(std::string file_path, Input &input) -> std::tuple<int, P
 
 }
 
+void imprimir_inter(int natom, Intr &intr)
+{
+    for (int i = 0; i < natom -1; ++i)
+    {
+        std::cout << i << "=";
+        for (int j = i + 1; j < natom; ++j)
+        {
+            if (intr.inter[i][j] == 1)
+                std::cout << "x";
+        }
+        std::cout << std::endl;
+    }
+    std::terminate();
+}
+
 int main()
 {
 	//std::vector<std::string> dmdcg = getInput(std::cin);
@@ -863,19 +889,6 @@ int main()
 
     /// llegeix les coordenades (fitxer pdb)
     auto [natom, pdb, xoc, other] = get_molecule_info(input.file9, input);
-
-    /// We instantiate all the structs with their vectors sized according to "natom"
-    /*Xoc xoc(natom);
-    Pous pous(natom);
-    Intr intr(natom);
-    Cov cov(natom, NPAIRMAX);
-    Pdb pdb(natom);
-    Atpres atpres(natom);
-    Shake shake(natom);
-    Npt npt(natom);
-    Fisic fisic(natom);
-    Param param;
-    Parmsolv parmsolv(natom);*/
 
     int kk = 0; /// Temp variable for storing the sum of previous molecule's residue sequence numbers
     int im = 0; /// Number of molecules (A, B, C, ...)
@@ -912,7 +925,6 @@ int main()
         std::cout << "The number of particles exceeds the limit of " << NATMAX << "\n";
         return 1;
     }*/
-
 
     /// assigna un tipus a cada atom (atomtypes.dat)
     /** TODO: This section reads the file multiple times, so we can
@@ -984,14 +996,6 @@ int main()
     /// carrega els parametres de cada tipus d'atom (potentials.dat)
     /// TODO: Same as above, we are reading the file multiple times
     std::ifstream file17(input.file17, std::ios_base::in);
-
-    /*std::vector<std::vector<double>> qa(natom);
-    std::vector<std::vector<double>> gfreea(natom);
-    std::vector<std::vector<double>> va(natom);
-    std::vector<std::vector<double>> evdwa(natom);
-    std::vector<std::vector<double>> rvdwa(natom);
-    std::vector<std::vector<double>> rhca(natom);
-    std::vector<std::vector<double>> xma(natom);*/
 
     for (int i = 0; i < natom; ++i)
     {
@@ -1090,7 +1094,7 @@ int main()
                 sumrvdw += std::pow(other.rvdwa[i][j], 3.0);
             }
 
-            fisic.rvdw[i] = input.factr * std::pow(sumrvdw, 0.333333);
+            fisic.rvdw[i] = input.factr * std::pow(sumrvdw, 0.3333);
 
             cov.rhc[i] = 0.8 * fisic.rvdw[i];
         }
@@ -1102,20 +1106,10 @@ int main()
 
 
     /// llegeix la matriu de topologia (topologia.dat)
-
-    /*std::vector<std::vector<int>> icov(natom, std::vector<int>(natom));
-    std::vector<std::vector<int>> nstep(natom, std::vector<int>(natom));
-    std::vector<std::vector<int>> inter(natom, std::vector<int>(natom));
-    std::vector<std::vector<int>> istruct(natom, std::vector<int>(natom));
-
-    std::vector<std::array<int, 2>> ibound(NPAIRMAX);
-    std::vector<int> rbound(NPAIRMAX);*/
-
     std::ifstream file7(input.file7, std::ios_base::in);
 
     int npair = 0;
 
-    /// The topology file is not necessary so it's not an error if it doesn't exist
     while (file7)
     {
         /// Each line/record in the .dat file we're reading
@@ -1123,34 +1117,34 @@ int main()
 
         std::getline(file7, topology_record);
 
-        if (file17.eof())
+        if (file17.eof() || topology_record == "")  /// TODO: add to other input files if we are reading an empty line
             break;
 
         ///Fields of each record
         int i;
         int j;
-        int rij;
+        double rij;
 
         std::stringstream ss(topology_record);
         ss >> i >> j >> rij;
 
+        i = i - OFFSET;
+        j = j - OFFSET;
+
         cov.icov[i][j] = 1;
-        cov.ibound[npair][0] = i - 1;
-        cov.ibound[npair][1] = j - 1;
-        cov.rbound[npair] = rij - 1;
+        cov.ibound[npair][0] = i ;
+        cov.ibound[npair][1] = j ;
+        cov.rbound[npair] = rij;
 
         ++npair;
     }
-
 
     /** TODO: Next we write file "dmd.out" with contains all input
         parameters, for now i'm going to skip it
     */
 
     /// reconeix estructura secundaria i estableix ponts d'hidrogen [324]
-
-    //std::vector<int> ihb(natom);
-    int nhb = 0;
+    int nhb = 0;    /// Number of hydrogen bonds
 
     /// ponts hidrogen O --> H
     for (int i = 0; i < nres - 4; ++i)
@@ -1211,8 +1205,8 @@ int main()
             atpres.ihb[n1] = 1;
             atpres.ihb[n2] = 1;
 
-            /// write to dmd.out
-            std::cout << "HBOND " << pdb.atom[ii] << " " << pdb.res[ii] << " " << pdb.ind2[ii] + OFFSET << " " << pdb.atom[jj] << " " << pdb.res[jj] << " " << pdb.ind2[jj] + OFFSET << std::endl;
+            /// TODO: write to dmd.out
+            //std::cout << "HBOND " << pdb.atom[ii] << " " << pdb.res[ii] << " " << pdb.ind2[ii] + OFFSET << " " << pdb.atom[jj] << " " << pdb.res[jj] << " " << pdb.ind2[jj] + OFFSET << std::endl;
         }
     }
 
@@ -1275,11 +1269,10 @@ int main()
             atpres.ihb[n1] = 1;
             atpres.ihb[n2] = 1;
 
-            /// write to dmd.out
-            std::cout << "HBOND " << pdb.atom[ii] << " " << pdb.res[ii] << " " << pdb.ind2[ii] + OFFSET << " " << pdb.atom[jj] << " " << pdb.res[jj] << " " << pdb.ind2[jj] + OFFSET << std::endl;
+            /// TODO: write to dmd.out
+            //std::cout << "HBOND " << pdb.atom[ii] << " " << pdb.res[ii] << " " << pdb.ind2[ii] + OFFSET << " " << pdb.atom[jj] << " " << pdb.res[jj] << " " << pdb.ind2[jj] + OFFSET << std::endl;
         }
     }
-
 
     Pous pous = Pous(natom);
     Intr intr = Intr(natom);
@@ -1345,7 +1338,7 @@ int main()
     /// assigna la regio on es troba la interaccio entre dues particules
 
     for (int i = 0; i < natom - 1; ++i)
-    {
+    {//std::cout << i + 1 << ": ";
         for (int j = i + 1; j < natom; ++j)
         {
             if (cov.icov[i][j] == 0)
@@ -1359,14 +1352,13 @@ int main()
                 double rij = std::sqrt(rmod2);
 
                 int k = 1 - OFFSET;
-                while (rij > pous.rstep[i][j][k] && k <= intr.nstep[i][j])
+                while (k <= intr.nstep[i][j] && rij > pous.rstep[i][j][k])
                     ++k;
 
-                other.ireg[i][j] = k;
+                other.ireg[i][j] = k;//std::cout << k << " ";
             }
-        }
-    }
-
+        }//std::cout << std::endl;
+    }//std::terminate();
 
     /// suma l'energia potencial de la conformacio inicial
 
@@ -1391,7 +1383,7 @@ int main()
             {
                 int k = intr.nstep[i][j];
 
-                while (dist < pous.rstep[i][j][k] && k > 0 - OFFSET)
+                while (k > 0 - OFFSET && dist < pous.rstep[i][j][k])
                 {
                     epot0 -= pous.estep[i][j][k];
 
@@ -1423,11 +1415,11 @@ int main()
         {
             /// call random_number(fi)
             xoc.v[i][j] = getUniformRandom();
-            other.vcm[j] += xoc.xm[i] * xoc.v[i][j];
+            other.vcm[j] += xoc.xm[i] * xoc.v[i][j];//std::cout << xoc.v[i][j] << " " << other.vcm[j] << std::endl;
         }
 
         other.vcm[j] /= xmassa;
-    }
+    }//std::terminate();
 
 
     /// ajusta l'energia cinetica a la temperatura requerida
@@ -1439,7 +1431,7 @@ int main()
         for (int i = 0; i < natom; ++i)
         {
             xoc.v[i][j] -= other.vcm[j];
-            ekin += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);
+            ekin += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);//std::cout << xoc.v[i][j] << " " << ekin << std::endl;
         }
     }
 
@@ -1451,14 +1443,14 @@ int main()
         for (int i = 0; i < natom; ++i)
         {
             xoc.v[i][j] *= std::sqrt(sto);
-            ekin0 += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);
+            ekin0 += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);//std::cout << xoc.v[i][j] << " " << ekin0 << std::endl;
         }
     }
 
     ekin0 /= FACTE;
 
-    double etot0 = epot0 + ekin0;
-
+    double etot0 = epot0 + ekin0;//std::cout << ekin0 << " " << etot0 << std::endl;
+//std::terminate();
 
     /// ara busca el CM
 
@@ -1547,16 +1539,18 @@ int main()
     double tevent = 0.0;
 
     file12 << "#Energia inicial " << epot0 << " " << epotmol0 << " " << epothb0 << " " << epothbmol0 << " " << ekin0 << " " << etot0 << " " << nhb << std::endl;
-/// Checkpoint
+
     for (int ibloc = 0; ibloc < input.nbloc; ++ibloc)
-    {
+    {std::cout << "a" << std::endl;
         double tacum = 0.0;
 
         double epot_i;
         double etot_i;
-
+std::cout << "b" << std::endl;
+int counter_1 = 0;
+int counter_2 = 0;
         while (tacum < input.tsnap)
-        {
+        {std::cout << "counter_1: " << counter_1 << std::endl;
             for (int i = 0; i < natom - 1; ++i)
                 for (int j = i + 1; j < natom; ++j)
                     if (intr.istruct[i][j] == 0)
@@ -1606,7 +1600,7 @@ int main()
                                 else
                                 {
                                     if (intr.istruct[n1][n2] == 1)
-                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1)
+                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1 - OFFSET)
                                             ++ic;
                                 }
 
@@ -1626,7 +1620,7 @@ int main()
                                 else
                                 {
                                     if (intr.istruct[n1][n2] == 1)
-                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1)
+                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1 - OFFSET)
                                             ++ic;
                                 }
 
@@ -1646,12 +1640,12 @@ int main()
                                 else
                                 {
                                     if (intr.istruct[n1][n2] == 1)
-                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1)
+                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1 - OFFSET)
                                             ++ic;
                                 }
 
                                 if (ic == 3)
-                                {
+                                {//std::cout << "ic==3 in " << i << " " << j << std::endl;
                                     ++nhb;
 
                                     n1 = atpres.io[i];
@@ -1665,47 +1659,47 @@ int main()
 
                                     creapouhb(n1, n2, distancies.rohmin, distancies.roha, distancies.rohb, distancies.rohmax, ene, pous, intr);
 
-                                    other.ireg[n1][n2] = 2;
+                                    other.ireg[n1][n2] = 2 - OFFSET;
 
-                                    n1 = atpres.in[i];
-                                    n2 = atpres.io[j];
+                                    n1 = atpres.io[i];
+                                    n2 = atpres.in[j];
 
                                     sto = parmsolv.fcont[n1] * parmsolv.fcont[n2];
                                     ene = input.ehb * sto + input.ehbc * (1.0 - sto);
 
                                     creapouhb(n1, n2, distancies.rnomin, distancies.rnoa, distancies.rnob, distancies.rnomax, ene, pous, intr);
 
-                                    other.ireg[n1][n2] = 2;
+                                    other.ireg[n1][n2] = 2 - OFFSET;
 
-                                    n1 = atpres.ih[i];
-                                    n2 = atpres.ico[j];
+                                    n1 = atpres.ico[i];
+                                    n2 = atpres.ih[j];
 
                                     sto = parmsolv.fcont[n1] * parmsolv.fcont[n2];
                                     ene = input.ehb * sto + input.ehbc * (1.0 - sto);
 
                                     creapouhb(n1, n2, distancies.rchmin, distancies.rcha, distancies.rchb, distancies.rchmax, ene, pous, intr);
 
-                                    other.ireg[n1][n2] = 2;
+                                    other.ireg[n1][n2] = 2 - OFFSET;
                                 }
                                 else
                                 {
-                                    n1 = atpres.ih[i];
-                                    n2 = atpres.io[j];
+                                    n1 = atpres.io[i];
+                                    n2 = atpres.ih[j];//std::cout << "a: " << "ih[" << i << "]=" << n1 << " io[" << j << "]=" << n2 << std::endl;
 
                                     intr.istruct[n1][n2] = 0;
-                                    other.ireg[n1][n2] = 0;
+                                    other.ireg[n1][n2] = 0 - OFFSET;
 
-                                    n1 = atpres.in[i];
-                                    n2 = atpres.io[j];
-
-                                    intr.istruct[n1][n2] = 0;
-                                    other.ireg[n1][n2] = 0;
-
-                                    n1 = atpres.ih[i];
-                                    n2 = atpres.ico[j];
+                                    n1 = atpres.io[i];
+                                    n2 = atpres.in[j];//std::cout << "b: " << "in[" << i << "]=" << n1 << " io[" << j << "]=" << n2 << std::endl;
 
                                     intr.istruct[n1][n2] = 0;
-                                    other.ireg[n1][n2] = 0;
+                                    other.ireg[n1][n2] = 0 - OFFSET;
+
+                                    n1 = atpres.ico[i];
+                                    n2 = atpres.ih[j];//std::cout << "c: " << "ih[" << i << "]=" << n1 << " ico[" << j << "]=" << n2 << std::endl;
+
+                                    intr.istruct[n1][n2] = 0;
+                                    other.ireg[n1][n2] = 0 - OFFSET;
                                 }
                             }
                         }
@@ -1742,7 +1736,7 @@ int main()
                                 else
                                 {
                                     if (intr.istruct[n1][n2] == 1)
-                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1)
+                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1 - OFFSET)
                                             ++ic;
                                 }
 
@@ -1762,7 +1756,7 @@ int main()
                                 else
                                 {
                                     if (intr.istruct[n1][n2] == 1)
-                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1)
+                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1 - OFFSET)
                                             ++ic;
                                 }
 
@@ -1782,12 +1776,12 @@ int main()
                                 else
                                 {
                                     if (intr.istruct[n1][n2] == 1)
-                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1)
+                                        if (other.ireg[n1][n2] <= intr.nstep[n1][n2] && other.ireg[n1][n2] > 1 - OFFSET)
                                             ++ic;
                                 }
 
                                 if (ic == 3)
-                                {
+                                {//std::cout << "ic==3 in " << i << " " << j << std::endl;
                                     ++nhb;
 
                                     n1 = atpres.ih[i];
@@ -1801,7 +1795,7 @@ int main()
 
                                     creapouhb(n1, n2, distancies.rohmin, distancies.roha, distancies.rohb, distancies.rohmax, ene, pous, intr);
 
-                                    other.ireg[n1][n2] = 2;
+                                    other.ireg[n1][n2] = 2 - OFFSET;
 
                                     n1 = atpres.in[i];
                                     n2 = atpres.io[j];
@@ -1811,7 +1805,7 @@ int main()
 
                                     creapouhb(n1, n2, distancies.rnomin, distancies.rnoa, distancies.rnob, distancies.rnomax, ene, pous, intr);
 
-                                    other.ireg[n1][n2] = 2;
+                                    other.ireg[n1][n2] = 2 - OFFSET;
 
                                     n1 = atpres.ih[i];
                                     n2 = atpres.ico[j];
@@ -1821,7 +1815,7 @@ int main()
 
                                     creapouhb(n1, n2, distancies.rchmin, distancies.rcha, distancies.rchb, distancies.rchmax, ene, pous, intr);
 
-                                    other.ireg[n1][n2] = 2;
+                                    other.ireg[n1][n2] = 2 - OFFSET;
                                 }
                                 else
                                 {
@@ -1829,19 +1823,19 @@ int main()
                                     n2 = atpres.io[j];
 
                                     intr.istruct[n1][n2] = 0;
-                                    other.ireg[n1][n2] = 0;
+                                    other.ireg[n1][n2] = 0 - OFFSET;
 
                                     n1 = atpres.in[i];
                                     n2 = atpres.io[j];
 
                                     intr.istruct[n1][n2] = 0;
-                                    other.ireg[n1][n2] = 0;
+                                    other.ireg[n1][n2] = 0 - OFFSET;
 
                                     n1 = atpres.ih[i];
                                     n2 = atpres.ico[j];
 
                                     intr.istruct[n1][n2] = 0;
-                                    other.ireg[n1][n2] = 0;
+                                    other.ireg[n1][n2] = 0 - OFFSET;
                                 }
                             }
                         }
@@ -1850,12 +1844,12 @@ int main()
             }
 
             potencial(natom, xoc, pous, intr, cov, pdb, fisic, param, parmsolv);
-
+std::cout << "c" << std::endl;
             for (int i = 0; i < natom - 1; ++i)
-            {
+            {//std::cout << i << ": ";
                 for (int j = i + 1; j < natom; ++j)
-                {
-                    if (other.ireg[i][j] == 0 && cov.icov[i][j] == 0)
+                {//std::cout << other.ireg[i][j] + 1 << " ";
+                    if (other.ireg[i][j] == 0 - OFFSET && cov.icov[i][j] == 0)
                     {
                         double rmin2 = pous.rstep[i][j][0] * pous.rstep[i][j][0];
                         double rmax2 = pous.rstep[i][j][1] * pous.rstep[i][j][1];
@@ -1864,26 +1858,26 @@ int main()
                         double rij2 = dbox(i, j, 1, xoc);
                         double rij3 = dbox(i, j, 2, xoc);
 
-                        double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;
+                        double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;//std::cout << boost::format("%16.6f %16.6f %16.6f  ") % rmod2 % rmin2 % rmax2;
 
                         if (rmod2 < rmin2)
                         {
-                            other.ireg[i][j] = 1;
+                            other.ireg[i][j] = 1 - OFFSET;
                         }
                         else if (rmod2 > rmax2)
                         {
-                            other.ireg[i][j] = 3;
+                            other.ireg[i][j] = 3 - OFFSET;
                         }
                         else
                         {
-                            other.ireg[i][j] = 2;
+                            other.ireg[i][j] = 2 - OFFSET;
                         }
-                    }
-                }
-            }
+                    }//std::cout << other.ireg[i][j] << " ";
+                }//std::cout << std::endl;
+            }//std::terminate();
 
             /// llista de solapaments plausibles
-
+std::cout << "d" << std::endl;
             for (int i = 0; i < natom -1; ++i)
             {
                 shake.ishk[i] = 0;
@@ -1937,9 +1931,9 @@ int main()
             }
 
             double tacene = 0.0;
-
+std::cout << "e" << std::endl;
             while (tacene < input.tene)
-            {
+            {std::cout << "counter_2: " << counter_2 << std::endl;//if (counter_2 == 1)imprimir_inter(natom, intr);
                 dmdshake(natom, npair, mem1, mem2, xoc, cov, shake);
 
                 for (int i = 0; i < natom - 1; ++i)
@@ -1953,14 +1947,15 @@ int main()
 
                 if (input.isolv != 0)
                     enchufa(natom, input.dcut, xoc, intr, cov, atpres, pdb, npt);
-
+//if (counter_2 == 1)imprimir_inter(natom, intr);
+//if (counter_2 == 1)std::terminate();
                 /// fa tornar a la seva regio els parells que han canviat de regio sense que el programa se n'adoni
                 int icont = 0;
 
                 for (int i = 0; i < natom - 1; ++i)
-                {
+                {if(counter_2==14)std::cout << i << " ";if(i==37)std::cout << boost::format("%4d->%12.4f") % i % (xoc.v[i][0]*1E-10) << std::endl;
                     for (int j = i + 1; j < natom; ++j)
-                    {
+                    {if(j==37)std::cout << boost::format("%4d|>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
                         if (intr.inter[i][j] == 1)
                         {
                             double rij1 = dbox(j, i, 0, xoc);
@@ -1979,19 +1974,19 @@ int main()
 
                             double rij = std::sqrt(rmod2);
 
-                            int k = 0;
+                            int k = 1 - OFFSET;
 
-                            while (rij > pous.rstep[i][j][k] && k <= intr.nstep[i][j])
+                            while (k <= intr.nstep[i][j] && rij > pous.rstep[i][j][k])
                             {
                                 ++k;
                             }
 
-                            int k0 = other.ireg[i][j];
+                            int k0 = other.ireg[i][j];//std::cout << k0 + 1 << " ";
 
                             int ich = 0;
 
                             if (k0 > k && prod < 0.0)
-                            {
+                            {if(counter_2==14) std::cout << boost::format("%4d=%12.4f %12.4f %12.4f")%j%(prod*1E-10)%(xoc.v[i][0]*1E-10)%(xoc.v[j][0]*1E-10);
                                 ++icont;
                                 double dpot = -pous.estep[i][j][k0 - 1] * FACTE;
 
@@ -2000,7 +1995,7 @@ int main()
                                 if (ich == 1)
                                     --other.ireg[i][j];
 
-                                ++ierr2;
+                                ++ierr2;if(j==37)std::cout << boost::format("%4d)>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
                             }
                             else if (k0 < k && prod > 0.0)
                             {
@@ -2011,11 +2006,13 @@ int main()
 
                                 if (ich == 1)
                                     ++other.ireg[i][j];
-                            }
-                        }
-                    }
-                }
 
+                                ++ierr2;if(j==37)std::cout << boost::format("%4d(>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
+                            }
+                        }if(j==37)std::cout << boost::format("%4d/>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
+                    }if(counter_2 == 14)std::cout << std::endl;if(i==37)std::cout << boost::format("%4d=>%12.4f") % i % (xoc.v[i][0]*1E-10) << std::endl;
+                }//std::cout << icont << " " << ierr2 << std::endl;//std::terminate();
+if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%12.2f %12.2f %12.2f")%(xoc.v[i][0]*1E-10)%(xoc.v[i][1]*1E-10)%(xoc.v[i][2]*1E-10) << std::endl;std::terminate();}
                 /// translacio i variacio dels temps
                 for (int j = 0; j < 3; ++j)
                 {
@@ -2052,7 +2049,7 @@ int main()
 
                     int i = int(natom * fi);
                     if (i == natom)
-                        --natom;
+                        --i;
 
                     for (int j = 0; j < 3; ++j)
                     {
@@ -2060,18 +2057,20 @@ int main()
                         xoc.v[i][j] = fi / input.a;
                     }
                 }
-            }
 
+                counter_2++;
+            }
+//for (int i = 0; i < natom; ++i)std::cout << xoc.v[i][0] << " " << xoc.v[i][1] << " " << xoc.v[i][2] << std::endl;std::terminate();
             ekin = 0.0;
 
             for (int j = 0; j < 3; ++j)
             {
                 for (int i = 0; i < natom; ++i)
-                {
+                {std::cout << boost::format("%14.6f %14.6f")%(xoc.xm[i]) % (xoc.v[i][j]*1E-10) << std::endl;
                     ekin += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);
                 }
-            }
-
+            }std::terminate();
+std::cout << "f" << std::endl;
             double ekin2 = ekin / FACTE;
 
             if (input.icm == 1)
@@ -2107,6 +2106,7 @@ int main()
                 }
             }
 
+std::cout << "g" << std::endl;
             /// suma l'energia potencial de la conformacio inicial
             double epothb = 0.0;
             double epot = 0.0;
@@ -2114,7 +2114,7 @@ int main()
             static double epothbmol = 0.0; ///TODO: same here
 
             for (int i = 0; i < natom - 1; ++i)
-            {
+            {//std::cout << i+1 << ": ";
                 for (int j = i + 1; j < natom; ++j)
                 {
                     double rij1 = dbox(j, i, 0, xoc);
@@ -2126,30 +2126,30 @@ int main()
                     double dist = std::sqrt(rmod2);
 
                     if (intr.inter[i][j] == 1)
-                    {
+                    {//std::cout << boost::format("%12.6f ") % dist;
                         int k = intr.nstep[i][j];
 
-                        while (dist < pous.rstep[i][j][k] && k > 0 - OFFSET)
-                        {
-                            epot -= pous.estep[i][j][k];
+                        while (k > 0 - OFFSET && dist < pous.rstep[i][j][k])
+                        {//std::cout << epot << " ";
+                            epot += -pous.estep[i][j][k];
 
                             if (pdb.imol[i] != pdb.imol[j])
-                                epotmol -= pous.estep[i][j][k];
+                                epotmol += -pous.estep[i][j][k];
 
                             if (intr.istruct[i][j] == 1)
                             {
-                                epothb -= pous.estep[i][j][k];
+                                epothb += -pous.estep[i][j][k];
 
                                 if (pdb.imol[i] != pdb.imol[j])
-                                    epothbmol -= pous.estep[i][j][k];
+                                    epothbmol += -pous.estep[i][j][k];
                             }
 
                             --k;
                         }
                     }
-                }
-            }
-
+                }//std::cout << std::endl;
+            }//if (ibloc == 0)std::terminate();
+std::cout << epot << " " << ekin2 << std::endl;
             double etot = epot + ekin2;
 
             ///NEW: we added epot_i and etot_i to print epot and etot outside their current scope
@@ -2158,6 +2158,8 @@ int main()
 
             if (input.iprint == 1)
                 file12 << temps << " " << epot << " " << epotmol << " " << epothb << " " << epothbmol << " " << ekin2 << " " << etot << " " << nhb << std::endl;
+
+            ++counter_1;
         }
 
         file20 << boost::format("%5s       %5d") % "MODEL" % ibloc << std::endl;
