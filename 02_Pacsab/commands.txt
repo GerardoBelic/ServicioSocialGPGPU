@@ -1,0 +1,2 @@
+gfortran -ffree-line-length-0 cgdmd.f95 -o cgdmd 
+Start-Process .\cgdmd.exe -RedirectStandardInput dmdcg.dat -NoNewWindow -Wait

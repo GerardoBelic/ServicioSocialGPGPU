@@ -1,5 +1,13 @@
 /**
-TODO: check why v[][] is changing its values, probably changing because of the functions chgmomene, chgmom
+TODO: the fortran version has many "problems" due to real*4 and real*8 calculations mixing,
+      so as the final step of the debugging, we need to convert all fortran literals to double precision (real*8)
+      and check if the values are equal between programs (they should or I swear to God)
+
+      Also in one line I made input.iterm equal to 0 to eliminate the random changes to xoc.v (velocities),
+      and related to that I made the getUniformRandom() function return non-random numbers to control debug the
+      program, so once it is finished we should return that funcion to normal
+
+      Currently the program is filled with lots of comments, I will delete them once debug is finished
 */
 
 #include <iostream>
@@ -28,7 +36,7 @@ struct Input
 
     Input(std::vector<std::string> &lines_input)
     {
-        ///Por ahora se asignaran los valores mediante hardcoding
+        ///TODO: parsing the input is a little hard because fortran does it by default, so I should construct a parser function that fills this struct
         file9 = "structurecg.pdb";
         file7="topcg.dat";
         file12="energy.dat";
@@ -163,10 +171,10 @@ auto getUniformRandom() -> double
 
     static double st_rnd = 0.0;
 
-    st_rnd += 0.05;
+    st_rnd += 0.0625;
 
     if (st_rnd > 0.99)
-        st_rnd = 0.05;
+        st_rnd = 0.0625;
 
     return st_rnd;
 
@@ -334,6 +342,24 @@ struct Other
 
 };
 
+void imprimir_v(int natom, int nterminar, Xoc &xoc)
+{
+    for (int i = 0; i < natom; ++i)
+    {
+        std::cout << boost::format("%4d %22.16f %22.16f %22.16f")%(i+1)%(xoc.v[i][0]*1.e-10)%(xoc.v[i][1]*1.e-10)%(xoc.v[i][2]*1.e-10) << std::endl;
+    }
+    if (nterminar==1)std::terminate();
+}
+
+void imprimir_r(int natom, int nterminar, Xoc &xoc)
+{
+    for (int i = 0; i < natom; ++i)
+    {
+        std::cout << boost::format("%4d %45.40f %45.40f %45.40f")%(i+1)%(xoc.r[i][0]*1.e-10)%(xoc.r[i][1]*1.e-10)%(xoc.r[i][2]*1.e-10) << std::endl;
+    }
+    if (nterminar==1)std::terminate();
+}
+
 auto dbox(int n1, int n2, int k, const Xoc &xoc) -> double
 {
 
@@ -341,7 +367,7 @@ auto dbox(int n1, int n2, int k, const Xoc &xoc) -> double
     double r12 = xoc.r[n2][k] - xoc.r[n1][k];
 
     if (r12 > rbox2)
-        r12 -= xoc.rbox;
+        r12 += -xoc.rbox;
     else if (r12 < -rbox2)
         r12 += xoc.rbox;
 
@@ -520,21 +546,21 @@ auto enchufa(int natom, double dcut, Xoc &xoc, Intr &intr, Cov &cov, Atpres &atp
     double dcut2 = dcut * dcut;
 
     for (int i = 0; i < natom - 1; ++i)
-    {//std::cout << i+1 << " ";
+    {//std::cout << i+1 << " " << npt.ipot[i] << std::endl;//std::cout << i+1 << " ";
         for (int l = 0; l < npt.ipot[i]; ++l)
         {
             int j = npt.npot[i][l];
-
+//if (i == 11 && j == 470)std::cout << boost::format("%4d %12.4f %12.4f %12.4f")%intr.inter[i][j]%dbox(i, j, 0, xoc)%dbox(i, j, 1, xoc)%dbox(i, j, 2, xoc) << std::endl;
             if (pdb.nat[i] > 1 && pdb.nat[j] > 1)
-            {
+            {//std::cout << j << " ";
                 double rij1 = dbox(i, j, 0, xoc);
                 double rij2 = dbox(i, j, 1, xoc);
                 double rij3 = dbox(i, j, 2, xoc);
 
                 double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;//std::cout << rmod2 << " ";
 
-                if (rmod2 < dcut2)
-                    intr.inter[i][j] = 1;//std::cout << j+1 << " ";}
+                if (rmod2 < dcut2)//{
+                    intr.inter[i][j] = 1;//if (i == 11 && j == 470)std::cout << boost::format("%4d %12.4f %12.4f %12.4f  %12.4f %12.4f")%intr.inter[i][j]%dbox(i, j, 0, xoc)%dbox(i, j, 1, xoc)%dbox(i, j, 2, xoc)%rmod2%dcut2 << std::endl;}//std::cout << j+1 << " ";}
             }
         }//std::cout << std::endl;
     }
@@ -581,7 +607,12 @@ auto creapouhb(int n1, int n2, double rmin, double r0, double r1, double rmax, d
 
 auto chgmom(int mem1, int mem2, double rij1, double rij2, double rij3, Xoc &xoc) -> void
 {
-
+/*if (mem1==37||mem2==37)std::cout << mem1 << " " << mem2 << " => " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==586||mem2==586)std::cout << mem1 << " " << mem2 << " => " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==568||mem2==568)std::cout << mem1 << " " << mem2 << " => " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
+/*if (mem1==11||mem2==11)std::cout << mem1 << " " << mem2 << " => " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==470||mem2==470)std::cout << mem1 << " " << mem2 << " => " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==14||mem2==14)std::cout << mem1 << " " << mem2 << " => " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
     double vdmod = 0.0;
 
     vdmod += (xoc.v[mem2][0] - xoc.v[mem1][0]) * rij1;
@@ -590,7 +621,7 @@ auto chgmom(int mem1, int mem2, double rij1, double rij2, double rij3, Xoc &xoc)
 
     double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;
 
-    vdmod /= rmod2;
+    vdmod = vdmod / rmod2;
 
     double xsum = 0.5 * (1.0 / xoc.xm[mem1] + 1.0 / xoc.xm[mem2]);
 
@@ -605,14 +636,25 @@ auto chgmom(int mem1, int mem2, double rij1, double rij2, double rij3, Xoc &xoc)
 
     xoc.v[mem1][2] += dp / xoc.xm[mem1] * rij3;
     xoc.v[mem2][2] += -dp / xoc.xm[mem2] * rij3;
-
+//std::cout << boost::format("%45.35f %45.35f %45.35f %45.35f")%(vdmod*1e-10)%rmod2%xsum%(dp*1e-10) << std::endl;
+/*if (mem1==37||mem2==37)std::cout << mem1 << " " << mem2 << " -> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==586||mem2==586)std::cout << mem1 << " " << mem2 << " -> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==568||mem2==568)std::cout << mem1 << " " << mem2 << " -> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
+/*if (mem1==11||mem2==11)std::cout << mem1 << " " << mem2 << " -> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==470||mem2==470)std::cout << mem1 << " " << mem2 << " -> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==14||mem2==14)std::cout << mem1 << " " << mem2 << " -> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
     return;
 
 }
 
 auto chgmomene(int mem1, int mem2, double rij1, double rij2, double rij3, double dpot, int &ich, Xoc &xoc) -> void
 {
-
+/*if (mem1==37||mem2==37)std::cout << mem1 << " " << mem2 << " /\> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==586||mem2==586)std::cout << mem1 << " " << mem2 << " /\> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==568||mem2==568)std::cout << mem1 << " " << mem2 << " /\> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
+/*if (mem1==11||mem2==11)std::cout << mem1 << " " << mem2 << " /\> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==470||mem2==470)std::cout << mem1 << " " << mem2 << " /\> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==14||mem2==14)std::cout << mem1 << " " << mem2 << " /\> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
     double a = 1E-10;
 
     double vdmod = 0.0;
@@ -658,7 +700,12 @@ auto chgmomene(int mem1, int mem2, double rij1, double rij2, double rij3, double
 
     xoc.v[mem1][2] += dp / xoc.xm[mem1] * rij3;
     xoc.v[mem2][2] -= dp / xoc.xm[mem2] * rij3;
-
+/*if (mem1==37||mem2==37)std::cout << mem1 << " " << mem2 << " \/> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==586||mem2==586)std::cout << mem1 << " " << mem2 << " \/> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==568||mem2==568)std::cout << mem1 << " " << mem2 << " \/> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
+/*if (mem1==11||mem2==11)std::cout << mem1 << " " << mem2 << " \/> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==470||mem2==470)std::cout << mem1 << " " << mem2 << " \/> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;
+if (mem1==14||mem2==14)std::cout << mem1 << " " << mem2 << " \/> " << xoc.v[mem1][0]*1E-10 << " " << xoc.v[mem2][0]*1E-10 << std::endl;*/
     return;
 
 }
@@ -667,7 +714,7 @@ auto dmdshake(int natom, int nbound, int mem1, int mem2, Xoc &xoc, Cov &cov, Sha
 {
 
     int ierr = 0;
-
+//std::cout << "-->" << xoc.v[37][0]*1E-10 << std::endl;
     /// particules NO enllaçades
 
     for (int i = 0; i < natom - 1; ++i)
@@ -689,15 +736,15 @@ auto dmdshake(int natom, int nbound, int mem1, int mem2, Xoc &xoc, Cov &cov, Sha
             double prod = rij1 * vij1 + rij2 * vij2 + rij3 * vij3;
 
             double dmin = cov.rhc[i] + cov.rhc[j];
-
+//std::cout << boost::format("%40.35f")%rij << std::endl;//if (i == 37)std::cout << "=>" << xoc.v[568][0]*1E-10 << std::endl;//if (j == 37)std::cout << "->" << xoc.v[37][0]*1E-10 << std::endl;
             /// xoc frontal entre particules no enllaçades
             if (rij < dmin && prod < 0.0)
-            {
+            {//std::cout << boost::format("%40.35f %40.35f %40.35f %40.35f %40.35f %40.35f") % (xoc.v[i][0]*1E-11)% (xoc.v[i][1]*1E-11)% (xoc.v[i][2]*1E-11)% (xoc.v[j][0]*1E-11)% (xoc.v[j][1]*1E-11)% (xoc.v[j][2]*1E-11) << std::endl;;
                 chgmom(i, j, rij1, rij2, rij3, xoc);
-                ++ierr;
-            }
+                ++ierr;//std::cout << boost::format("%40.35f %40.35f %40.35f %40.35f %40.35f %40.35f") % (xoc.v[i][0]*1E-11)% (xoc.v[i][1]*1E-11)% (xoc.v[i][2]*1E-11)% (xoc.v[j][0]*1E-11)% (xoc.v[j][1]*1E-11)% (xoc.v[j][2]*1E-11) << std::endl;;
+            }//if(i==1)std::terminate();//imprimir_v(natom,1,xoc);//if (i == 37)std::cout << "<=" << xoc.v[568][0]*1E-10 << std::endl;//if (j == 37)std::cout << "<-" << xoc.v[37][0]*1E-10 << std::endl;
         }
-    }
+    }//std::cout << "==>" << xoc.v[37][0]*1E-10 << std::endl;
 
     /// particules enllaçades
     for (int k = 0; k < nbound; ++k)
@@ -722,18 +769,19 @@ auto dmdshake(int natom, int nbound, int mem1, int mem2, Xoc &xoc, Cov &cov, Sha
         double vij3 = xoc.v[i][2] - xoc.v[j][2];
 
         double prod = rij1 * vij1 + rij2 * vij2 + rij3 * vij3;
-
+/*if((i>35 && i < 46)||(i==586)||(j==586))std::cout << boost::format("%4d %4d %12.4f %12.4f %12.4f %12.4f") % i % j % rmod2 % (prod*1E-10) % rbmin2 % rbmax2 << std::endl;
+if((i>35 && i < 46)||(i==586)||(j==586))std::cout << boost::format("%12.4f %12.4f %12.4f  %12.4f %12.4f %12.4f") % (xoc.v[i][0]*1E-10) % (xoc.v[i][1]*1E-10) % (xoc.v[i][2]*1E-10) % (xoc.v[j][0]*1E-10) % (xoc.v[j][1]*1E-10) % (xoc.v[j][2]*1E-10) << std::endl;*/
         if (rmod2 > rbmax2 && prod > 0.0)
         {
-            ++ierr;
-            chgmom(i, j, rij1, rij2, rij3, xoc);
+            ++ierr;//if(i==37||j==37)std::cout << i << " " << j << " " << "||>" << xoc.v[37][0]*1E-10 << std::endl;
+            chgmom(i, j, rij1, rij2, rij3, xoc);//if(i==37||j==37)std::cout << i << " " << j << " " << "++>" << xoc.v[37][0]*1E-10 << std::endl;
         }
         else
         {
             if (rmod2 < rbmin2 && prod < 0.0)
             {
-                ++ierr;
-                chgmom(i, j, rij1, rij2, rij3, xoc);
+                ++ierr;//std::cout << i << " " << j << " " << "))>" << xoc.v[37][0]*1E-10 << std::endl;
+                chgmom(i, j, rij1, rij2, rij3, xoc);//std::cout << i << " " << j << " " << "((>" << xoc.v[37][0]*1E-10 << std::endl;
             }
         }
     }
@@ -1104,7 +1152,6 @@ int main()
         xoc.v[i] = {0.0, 0.0, 0.0};
     }
 
-
     /// llegeix la matriu de topologia (topologia.dat)
     std::ifstream file7(input.file7, std::ios_base::in);
 
@@ -1321,15 +1368,15 @@ int main()
                 if (intr.istruct[i][j] != 1)
                 {
                     if (rmod2 < rpot2)
-                    {
+                    {//std::cout<<"x";
                         int k = npt.ipot[i];
                         npt.npot[i][k] = j;
                         ++npt.ipot[i];
                     }
                 }
             }
-        }
-    }
+        }//std::cout << std::endl;
+    }//std::terminate();
 
     if (input.isolv != 0)
         enchufa(natom, input.dcut, xoc, intr, cov, atpres, pdb, npt);
@@ -1420,8 +1467,8 @@ int main()
 
         other.vcm[j] /= xmassa;
     }//std::terminate();
-
-
+//std::cout << boost::format("%20.16f %20.16f %20.16f")%other.vcm[0]%other.vcm[1]%other.vcm[2] << std::endl;
+//imprimir_v(natom,1,xoc);
     /// ajusta l'energia cinetica a la temperatura requerida
 
     double ekin = 0.0;
@@ -1431,11 +1478,12 @@ int main()
         for (int i = 0; i < natom; ++i)
         {
             xoc.v[i][j] -= other.vcm[j];
-            ekin += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);//std::cout << xoc.v[i][j] << " " << ekin << std::endl;
+            ekin += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);//std::cout << boost::format("%20.16f %20.16f %20.16f %20.16f")%((0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0))*1.E24) % ((xoc.v[i][j] * input.a)*1.E11) % ((std::pow(xoc.v[i][j] * input.a, 2.0))*1.E21) % (xoc.v[i][j]) << std::endl;
         }
-    }
+    }//std::cout << boost::format("%20.16f")%(ekin*1.E20) << std::endl;
 
-    double sto = 1.5 * 8.314 * natom * input.temp / ekin;
+    double sto = 1.5 * 8.314 * natom * input.temp / ekin;//std::cout << boost::format("%20.16f %20.16f")% (sto*1.e-26) % (std::sqrt(sto)*1.e-13) << std::endl;
+//std::cout << boost::format("%40.35f %40.35f %40.35f %40.35f")%1.e-11f %1.e-11%(double(1.e-11f))%(float(1.e-11));std::terminate();
     double ekin0 = 0.0;
 
     for (int j = 0; j < 3; ++j)
@@ -1451,7 +1499,7 @@ int main()
 
     double etot0 = epot0 + ekin0;//std::cout << ekin0 << " " << etot0 << std::endl;
 //std::terminate();
-
+//imprimir_v(natom,1,xoc);
     /// ara busca el CM
 
     for (int j = 0; j < 3; ++j)
@@ -1484,7 +1532,7 @@ int main()
             xoc.r[i][j] += -other.rcm[j] + rbox2;
 
             if (xoc.r[i][j] > input.rbox)
-                xoc.r[i][j] -= input.rbox;
+                xoc.r[i][j] += -input.rbox;
 
             if (xoc.r[i][j] < 0.0)
                 xoc.r[i][j] += input.rbox;
@@ -1502,7 +1550,7 @@ int main()
                                     xoc.r[i][0] % xoc.r[i][1] % xoc.r[i][2] << std::endl;
         }
     }
-
+//imprimir_r(natom,1,xoc);
     file_input.close();
 
     file20 << boost::format("%s") % "ENDMDL" << std::endl;
@@ -1541,16 +1589,16 @@ int main()
     file12 << "#Energia inicial " << epot0 << " " << epotmol0 << " " << epothb0 << " " << epothbmol0 << " " << ekin0 << " " << etot0 << " " << nhb << std::endl;
 
     for (int ibloc = 0; ibloc < input.nbloc; ++ibloc)
-    {std::cout << "a" << std::endl;
+    {//std::cout << "a" << std::endl;
         double tacum = 0.0;
 
         double epot_i;
         double etot_i;
-std::cout << "b" << std::endl;
+//std::cout << "b" << std::endl;
 int counter_1 = 0;
 int counter_2 = 0;
         while (tacum < input.tsnap)
-        {std::cout << "counter_1: " << counter_1 << std::endl;
+        {//std::cout << "counter_1: " << counter_1 << std::endl;
             for (int i = 0; i < natom - 1; ++i)
                 for (int j = i + 1; j < natom; ++j)
                     if (intr.istruct[i][j] == 0)
@@ -1564,7 +1612,7 @@ int counter_2 = 0;
 
                 potencial(natom, xoc, pous, intr, cov, pdb, fisic, param, parmsolv);
 
-                int nhb = 0;
+                nhb = 0;
 
                 for (int i = 0; i < natom; ++i)
                     atpres.ihb[i] = 0;
@@ -1844,7 +1892,7 @@ int counter_2 = 0;
             }
 
             potencial(natom, xoc, pous, intr, cov, pdb, fisic, param, parmsolv);
-std::cout << "c" << std::endl;
+//std::cout << "c" << std::endl;
             for (int i = 0; i < natom - 1; ++i)
             {//std::cout << i << ": ";
                 for (int j = i + 1; j < natom; ++j)
@@ -1877,7 +1925,7 @@ std::cout << "c" << std::endl;
             }//std::terminate();
 
             /// llista de solapaments plausibles
-std::cout << "d" << std::endl;
+//std::cout << "d" << std::endl;
             for (int i = 0; i < natom -1; ++i)
             {
                 shake.ishk[i] = 0;
@@ -1894,7 +1942,7 @@ std::cout << "d" << std::endl;
                         double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;
 
                         if (rmod2 < rshake2)
-                        {
+                        {//std::cout << "x";
                             int k = shake.ishk[i];
                             shake.nshk[i][k] = j;
                             ++shake.ishk[i];
@@ -1903,15 +1951,15 @@ std::cout << "d" << std::endl;
                         if (intr.istruct[i][j] != 1)
                         {
                             if (rmod2 < rpot2)
-                            {
+                            {//std::cout << "y";
                                 int k = npt.ipot[i];
                                 npt.npot[i][k] = j;
                                 ++npt.ipot[i];
                             }
                         }
                     }
-                }
-            }
+                }//std::cout << std::endl;
+            }//std::terminate();
 
             double mem1 = 0;
             double mem2 = 0;
@@ -1931,11 +1979,12 @@ std::cout << "d" << std::endl;
             }
 
             double tacene = 0.0;
-std::cout << "e" << std::endl;
+//std::cout << "e" << std::endl;
             while (tacene < input.tene)
-            {std::cout << "counter_2: " << counter_2 << std::endl;//if (counter_2 == 1)imprimir_inter(natom, intr);
+            {//std::cout << "counter_2: " << counter_2 << std::endl;//std::cout << boost::format("<-->%12.4f\n")%(xoc.v[37][0]*1E-10);std::cout << boost::format("<-->%12.4f\n")%(xoc.v[568][0]*1E-10);//if (counter_2 == 1)imprimir_inter(natom, intr);
+//std::cout << counter_2 << "\n";//if((ibloc==0)&&(counter_2 == 1))imprimir_v(natom,1,xoc);
                 dmdshake(natom, npair, mem1, mem2, xoc, cov, shake);
-
+//std::cout << boost::format(">--<%12.4f\n")%(xoc.v[37][0]*1E-10);std::cout << boost::format(">--<%12.4f\n")%(xoc.v[568][0]*1E-10);
                 for (int i = 0; i < natom - 1; ++i)
                 {
                     for (int j = i + 1; j < natom; ++j)
@@ -1944,18 +1993,19 @@ std::cout << "e" << std::endl;
                             intr.inter[i][j] = 0;
                     }
                 }
-
+//imprimir_v(natom,1,xoc);
                 if (input.isolv != 0)
                     enchufa(natom, input.dcut, xoc, intr, cov, atpres, pdb, npt);
+//imprimir_v(natom,1,xoc);
 //if (counter_2 == 1)imprimir_inter(natom, intr);
 //if (counter_2 == 1)std::terminate();
                 /// fa tornar a la seva regio els parells que han canviat de regio sense que el programa se n'adoni
                 int icont = 0;
 
                 for (int i = 0; i < natom - 1; ++i)
-                {if(counter_2==14)std::cout << i << " ";if(i==37)std::cout << boost::format("%4d->%12.4f") % i % (xoc.v[i][0]*1E-10) << std::endl;
+                {//if(counter_2==14)std::cout << i << " ";if(i==37)std::cout << boost::format("%4d->%12.4f") % i % (xoc.v[i][0]*1E-10) << std::endl;
                     for (int j = i + 1; j < natom; ++j)
-                    {if(j==37)std::cout << boost::format("%4d|>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
+                    {//if(j==37)std::cout << boost::format("%4d|>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
                         if (intr.inter[i][j] == 1)
                         {
                             double rij1 = dbox(j, i, 0, xoc);
@@ -1984,9 +2034,9 @@ std::cout << "e" << std::endl;
                             int k0 = other.ireg[i][j];//std::cout << k0 + 1 << " ";
 
                             int ich = 0;
-
+//if((i==11)&&(j==14))std::cout << boost::format("%4d %4d==>%1d %1d  %12.4f\n")%i%j%k%k0%(prod*1E-10);
                             if (k0 > k && prod < 0.0)
-                            {if(counter_2==14) std::cout << boost::format("%4d=%12.4f %12.4f %12.4f")%j%(prod*1E-10)%(xoc.v[i][0]*1E-10)%(xoc.v[j][0]*1E-10);
+                            {//if(counter_2==14) std::cout << boost::format("%4d=%12.4f %12.4f %12.4f")%j%(prod*1E-10)%(xoc.v[i][0]*1E-10)%(xoc.v[j][0]*1E-10);
                                 ++icont;
                                 double dpot = -pous.estep[i][j][k0 - 1] * FACTE;
 
@@ -1995,7 +2045,7 @@ std::cout << "e" << std::endl;
                                 if (ich == 1)
                                     --other.ireg[i][j];
 
-                                ++ierr2;if(j==37)std::cout << boost::format("%4d)>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
+                                ++ierr2;//if(j==37)std::cout << boost::format("%4d)>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
                             }
                             else if (k0 < k && prod > 0.0)
                             {
@@ -2007,13 +2057,17 @@ std::cout << "e" << std::endl;
                                 if (ich == 1)
                                     ++other.ireg[i][j];
 
-                                ++ierr2;if(j==37)std::cout << boost::format("%4d(>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
+                                ++ierr2;//if(j==37)std::cout << boost::format("%4d(>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
                             }
-                        }if(j==37)std::cout << boost::format("%4d/>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
-                    }if(counter_2 == 14)std::cout << std::endl;if(i==37)std::cout << boost::format("%4d=>%12.4f") % i % (xoc.v[i][0]*1E-10) << std::endl;
+                        }//if(j==37)std::cout << boost::format("%4d/>%12.4f") % j % (xoc.v[j][0]*1E-10) << std::endl;
+                    }//if(counter_2 == 14)std::cout << std::endl;if(i==37)std::cout << boost::format("%4d=>%12.4f") % i % (xoc.v[i][0]*1E-10) << std::endl;
                 }//std::cout << icont << " " << ierr2 << std::endl;//std::terminate();
-if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%12.2f %12.2f %12.2f")%(xoc.v[i][0]*1E-10)%(xoc.v[i][1]*1E-10)%(xoc.v[i][2]*1E-10) << std::endl;std::terminate();}
+//if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%12.2f %12.2f %12.2f")%(xoc.v[i][0]*1E-10)%(xoc.v[i][1]*1E-10)%(xoc.v[i][2]*1E-10) << std::endl;std::terminate();}
                 /// translacio i variacio dels temps
+/*std::cout << boost::format("%12.4f %12.4f %12.4f\n")%dbox(11,470,0,xoc)%dbox(11,470,1,xoc)%dbox(11,470,2,xoc);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[11][0]*1E-10)%(xoc.v[11][1]*1E-10)%(xoc.v[11][2]*1E-10);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[470][0]*1E-10)%(xoc.v[470][1]*1E-10)%(xoc.v[470][2]*1E-10);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[14][0]*1E-10)%(xoc.v[14][1]*1E-10)%(xoc.v[14][2]*1E-10);*/
                 for (int j = 0; j < 3; ++j)
                 {
                     for (int i = 0; i < natom; ++i)
@@ -2021,7 +2075,10 @@ if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%
                         xoc.r[i][j] += input.tact * xoc.v[i][j];
                     }
                 }
-
+/*std::cout << boost::format("%12.4f %12.4f %12.4f\n")%dbox(11,470,0,xoc)%dbox(11,470,1,xoc)%dbox(11,470,2,xoc);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[11][0]*1E-10)%(xoc.v[11][1]*1E-10)%(xoc.v[11][2]*1E-10);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[470][0]*1E-10)%(xoc.v[470][1]*1E-10)%(xoc.v[470][2]*1E-10);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[14][0]*1E-10)%(xoc.v[14][1]*1E-10)%(xoc.v[14][2]*1E-10);*/
                 if (input.icm == 0)
                 {
                     for (int i = 0; i < natom; ++i)
@@ -2035,12 +2092,15 @@ if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%
                         }
                     }
                 }
-
+/*std::cout << boost::format("%12.4f %12.4f %12.4f\n")%dbox(11,470,0,xoc)%dbox(11,470,1,xoc)%dbox(11,470,2,xoc);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[11][0]*1E-10)%(xoc.v[11][1]*1E-10)%(xoc.v[11][2]*1E-10);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[470][0]*1E-10)%(xoc.v[470][1]*1E-10)%(xoc.v[470][2]*1E-10);
+std::cout << boost::format("%12.4f %12.4f %12.4f\n")%(xoc.v[14][0]*1E-10)%(xoc.v[14][1]*1E-10)%(xoc.v[14][2]*1E-10);*/
                 tacum += input.tact;
                 tacene += input.tact;
                 //tacterm += input.tact;
                 temps += input.tact;
-
+input.iterm = 0;
                 if (input.iterm == 1)
                 {
                     /// termostat Andersen
@@ -2050,7 +2110,7 @@ if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%
                     int i = int(natom * fi);
                     if (i == natom)
                         --i;
-
+//std::cout << "random: " << i << " " << fi << std::endl;
                     for (int j = 0; j < 3; ++j)
                     {
                         rnd_gauss(fi, xoc.xm[i], input.temp);
@@ -2058,19 +2118,19 @@ if(counter_2 == 14){for (int i = 0; i < natom; ++i)std::cout << boost::format("%
                     }
                 }
 
-                counter_2++;
-            }
+                counter_2++;//if (counter_2==16)std::terminate();
+            }//std::terminate();
 //for (int i = 0; i < natom; ++i)std::cout << xoc.v[i][0] << " " << xoc.v[i][1] << " " << xoc.v[i][2] << std::endl;std::terminate();
             ekin = 0.0;
 
             for (int j = 0; j < 3; ++j)
             {
                 for (int i = 0; i < natom; ++i)
-                {std::cout << boost::format("%14.6f %14.6f")%(xoc.xm[i]) % (xoc.v[i][j]*1E-10) << std::endl;
+                {//std::cout << boost::format("%14.6f %14.6f")%(xoc.xm[i]) % (xoc.v[i][j]*1E-10) << std::endl;
                     ekin += 0.5 * xoc.xm[i] * std::pow(xoc.v[i][j] * input.a, 2.0);
                 }
-            }std::terminate();
-std::cout << "f" << std::endl;
+            }//std::terminate();
+//std::cout << "f" << std::endl;
             double ekin2 = ekin / FACTE;
 
             if (input.icm == 1)
@@ -2106,7 +2166,7 @@ std::cout << "f" << std::endl;
                 }
             }
 
-std::cout << "g" << std::endl;
+//std::cout << "g" << std::endl;
             /// suma l'energia potencial de la conformacio inicial
             double epothb = 0.0;
             double epot = 0.0;
@@ -2124,13 +2184,13 @@ std::cout << "g" << std::endl;
                     double rmod2 = rij1 * rij1 + rij2 * rij2 + rij3 * rij3;
 
                     double dist = std::sqrt(rmod2);
-
+//if (i == 11 && j == 470)std::cout << intr.inter[i][j] << " " << dist;
                     if (intr.inter[i][j] == 1)
-                    {//std::cout << boost::format("%12.6f ") % dist;
+                    {//std::cout << j+1 << " ";//std::cout << boost::format("%12.6f ") % dist;
                         int k = intr.nstep[i][j];
 
                         while (k > 0 - OFFSET && dist < pous.rstep[i][j][k])
-                        {//std::cout << epot << " ";
+                        {//std::cout << boost::format("%14.3f ")% epot;
                             epot += -pous.estep[i][j][k];
 
                             if (pdb.imol[i] != pdb.imol[j])
@@ -2148,10 +2208,11 @@ std::cout << "g" << std::endl;
                         }
                     }
                 }//std::cout << std::endl;
-            }//if (ibloc == 0)std::terminate();
-std::cout << epot << " " << ekin2 << std::endl;
+            }
+//std::cout << epot << " " << ekin2 << std::endl;
             double etot = epot + ekin2;
-
+//std::cout << epot << " " << etot << std::endl;
+//if(ibloc==1)imprimir_v(natom,1,xoc);
             ///NEW: we added epot_i and etot_i to print epot and etot outside their current scope
             epot_i = epot;
             etot_i = etot;
