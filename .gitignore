@@ -4,6 +4,6 @@ dependencies/boost_1_80_0/
 #Compiled libraries from GLFW to Windows
 dependencies/glfw-3.3.8.bin.WIN64
 
-#02_Pacsab
-02_Pacsab/testing/snapshots.pdb
-02_Pacsab/testing/snapca.pdb
+#Snapshots
+*/snapshots.pdb
+*/snapca.pdb

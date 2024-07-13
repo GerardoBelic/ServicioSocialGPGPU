@@ -1,0 +1,17 @@
+natom=1138 nres=185 tsnap=1e-12 nbloc=10000
+epot=49.4047 ekin=1017.1 etot=1066.51 epothb=0 nhb=75
+Temps 1e-12 hbonds 75 epot -1460.65 198.72
+Temps 2e-12 hbonds 76 epot -1434.48 254.884
+Temps 3e-12 hbonds 76 epot -1394.98 323.284
+Temps 4e-12 hbonds 76 epot -1324.79 386.173
+Temps 5e-12 hbonds 76 epot -1440.19 272.38
+Temps 6e-12 hbonds 77 epot -1386.79 325.554
+Temps 7e-12 hbonds 77 epot -1420.25 321.984
+Temps 8e-12 hbonds 77 epot -1418.25 362.418
+Temps 9e-12 hbonds 77 epot -1434.12 335.478
+Temps 1e-11 hbonds 77 epot -1428.57 342.197
+Temps 1.1e-11 hbonds 77 epot -1242.04 544.879
+Temps 1.2e-11 hbonds 76 epot -1317.2 447.679
+Temps 1.3e-11 hbonds 76 epot -1264.74 545.024
+Temps 1.4e-11 hbonds 77 epot -1244.6 541.865
+Temps 1.5e-11 hbonds 78 epot -1423.34 391.008

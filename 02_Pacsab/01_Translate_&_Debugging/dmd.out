@@ -1,0 +1,30 @@
+natom=1138 nres=185 tsnap=1e-12 nbloc=10000
+epot=525.44 ekin=1017.1 etot=1542.54 epothb=0 nhb=75
+Temps 1e-12 hbonds 75 epot -1373.54 408.292
+Temps 2e-12 hbonds 75 epot -1445.07 417.867
+Temps 3e-12 hbonds 75 epot -1312.58 530.328
+Temps 4e-12 hbonds 75 epot -1057.06 808.876
+Temps 5e-12 hbonds 75 epot -924.698 965.471
+Temps 6e-12 hbonds 75 epot -940.874 962.095
+Temps 7e-12 hbonds 75 epot -925.766 979.623
+Temps 8e-12 hbonds 75 epot -963.509 943.751
+Temps 9e-12 hbonds 75 epot -937.374 970.87
+Temps 1e-11 hbonds 75 epot -903.575 1004.05
+Temps 1.1e-11 hbonds 75 epot -949.361 956.848
+Temps 1.2e-11 hbonds 75 epot -963.705 943.875
+Temps 1.3e-11 hbonds 75 epot -914.959 992.131
+Temps 1.4e-11 hbonds 75 epot -917.661 985.222
+Temps 1.5e-11 hbonds 74 epot -915.864 987.304
+Temps 1.6e-11 hbonds 74 epot -945.515 956.697
+Temps 1.7e-11 hbonds 74 epot -938.413 964.673
+Temps 1.8e-11 hbonds 74 epot -902.448 999.87
+Temps 1.9e-11 hbonds 74 epot -843.713 1057.99
+Temps 2e-11 hbonds 74 epot -881.166 1021.97
+Temps 2.1e-11 hbonds 74 epot -918.42 985.318
+Temps 2.2e-11 hbonds 74 epot -925.252 979.052
+Temps 2.3e-11 hbonds 74 epot -889.825 1013.9
+Temps 2.4e-11 hbonds 74 epot -924.539 976.128
+Temps 2.5e-11 hbonds 74 epot -902.879 999.226
+Temps 2.6e-11 hbonds 74 epot -909.277 992.477
+Temps 2.7e-11 hbonds 74 epot -879.108 1021.93
+Temps 2.8e-11 hbonds 74 epot -874.321 1026.72
